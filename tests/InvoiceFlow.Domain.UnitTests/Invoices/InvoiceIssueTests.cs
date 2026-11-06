@@ -11,7 +11,7 @@ public sealed class InvoiceIssueTests
         var invoice = TestData.DraftWithLine();
         var series = TestData.Series();
 
-        var result = invoice.Issue(series, TestData.Today, TestData.Now);
+        var result = invoice.Issue(series, TestData.Today, TestData.Now, TestData.Signer);
 
         result.IsSuccess.ShouldBeTrue();
         invoice.Status.ShouldBe(InvoiceStatus.Issued);
@@ -28,7 +28,7 @@ public sealed class InvoiceIssueTests
     public void Issued_documents_are_immutable()
     {
         var invoice = TestData.DraftWithLine();
-        invoice.Issue(TestData.Series(), TestData.Today, TestData.Now);
+        invoice.Issue(TestData.Series(), TestData.Today, TestData.Now, TestData.Signer);
 
         invoice.AddLine(TestData.Product(), TestData.Normal, 1, 1m).Error.ShouldBe(InvoiceErrors.NotDraft);
         invoice.RemoveLine(1).Error.ShouldBe(InvoiceErrors.NotDraft);
@@ -43,19 +43,19 @@ public sealed class InvoiceIssueTests
     {
         var invoice = TestData.DraftWithLine();
         var series = TestData.Series();
-        invoice.Issue(series, TestData.Today, TestData.Now);
+        invoice.Issue(series, TestData.Today, TestData.Now, TestData.Signer);
 
-        invoice.Issue(series, TestData.Today, TestData.Now).Error.ShouldBe(InvoiceErrors.NotDraft);
+        invoice.Issue(series, TestData.Today, TestData.Now, TestData.Signer).Error.ShouldBe(InvoiceErrors.NotDraft);
         series.LastNumber.ShouldBe(1);
     }
 
     [Fact]
     public void An_empty_draft_cannot_be_issued() =>
-        TestData.Draft().Issue(TestData.Series(), TestData.Today, TestData.Now).Error.ShouldBe(InvoiceErrors.NoLines);
+        TestData.Draft().Issue(TestData.Series(), TestData.Today, TestData.Now, TestData.Signer).Error.ShouldBe(InvoiceErrors.NoLines);
 
     [Fact]
     public void The_series_must_match_the_document_type() =>
-        TestData.DraftWithLine().Issue(TestData.Series(DocumentType.CreditNote), TestData.Today, TestData.Now)
+        TestData.DraftWithLine().Issue(TestData.Series(DocumentType.CreditNote), TestData.Today, TestData.Now, TestData.Signer)
             .Error.ShouldBe(InvoiceErrors.SeriesTypeMismatch);
 
     [Fact]
@@ -65,8 +65,8 @@ public sealed class InvoiceIssueTests
         var overLimit = TestData.DraftWithLine(unitPrice: 813.02m, customer: TestData.FinalConsumer()); // 1000.01
         var series = TestData.Series();
 
-        atLimit.Issue(series, TestData.Today, TestData.Now).IsSuccess.ShouldBeTrue();
-        overLimit.Issue(series, TestData.Today, TestData.Now).Error.ShouldBe(InvoiceErrors.FinalConsumerLimitExceeded);
+        atLimit.Issue(series, TestData.Today, TestData.Now, TestData.Signer).IsSuccess.ShouldBeTrue();
+        overLimit.Issue(series, TestData.Today, TestData.Now, TestData.Signer).Error.ShouldBe(InvoiceErrors.FinalConsumerLimitExceeded);
     }
 
     [Fact]
@@ -74,7 +74,7 @@ public sealed class InvoiceIssueTests
     {
         var series = TestData.Series();
 
-        TestData.Draft().Issue(series, TestData.Today, TestData.Now).IsFailure.ShouldBeTrue();
+        TestData.Draft().Issue(series, TestData.Today, TestData.Now, TestData.Signer).IsFailure.ShouldBeTrue();
 
         series.LastNumber.ShouldBe(0);
     }
@@ -84,7 +84,7 @@ public sealed class InvoiceIssueTests
     {
         var customer = TestData.Customer();
         var invoice = TestData.DraftWithLine(customer: customer);
-        invoice.Issue(TestData.Series(), TestData.Today, TestData.Now);
+        invoice.Issue(TestData.Series(), TestData.Today, TestData.Now, TestData.Signer);
 
         customer.Update("New Name, SA", "503504564", customer.Address, null);
 
@@ -97,6 +97,6 @@ public sealed class InvoiceIssueTests
         var series = TestData.Series();
         series.Close();
 
-        TestData.DraftWithLine().Issue(series, TestData.Today, TestData.Now).Error.ShouldBe(SeriesErrors.Inactive);
+        TestData.DraftWithLine().Issue(series, TestData.Today, TestData.Now, TestData.Signer).Error.ShouldBe(SeriesErrors.Inactive);
     }
 }

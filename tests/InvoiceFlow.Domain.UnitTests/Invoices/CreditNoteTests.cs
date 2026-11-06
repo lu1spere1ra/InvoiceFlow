@@ -10,7 +10,7 @@ public sealed class CreditNoteTests
         var invoice = TestData.Draft();
         invoice.AddLine(TestData.Product(), TestData.Normal, 10, 50m);
         invoice.AddLine(TestData.Product(), TestData.Exempt, 2, 30m, exemptionCode: "M07");
-        invoice.Issue(TestData.Series(), TestData.Today, TestData.Now);
+        invoice.Issue(TestData.Series(), TestData.Today, TestData.Now, TestData.Signer);
         return invoice;
     }
 
@@ -78,7 +78,7 @@ public sealed class CreditNoteTests
         note.AddLine(TestData.Product(), TestData.Normal, 1, 1m).Error.ShouldBe(InvoiceErrors.CreditNoteIsFixed);
         note.ClearLines().Error.ShouldBe(InvoiceErrors.CreditNoteIsFixed);
 
-        note.Issue(TestData.Series(DocumentType.CreditNote), TestData.Today, TestData.Now).IsSuccess.ShouldBeTrue();
+        note.Issue(TestData.Series(DocumentType.CreditNote), TestData.Today, TestData.Now, TestData.Signer).IsSuccess.ShouldBeTrue();
         note.DocumentNumber.ShouldBe("NC 2026A/1");
         note.Status.ShouldBe(InvoiceStatus.Issued);
     }

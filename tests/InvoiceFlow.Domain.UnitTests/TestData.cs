@@ -11,6 +11,8 @@ internal static class TestData
     public static readonly DateOnly Today = new(2026, 3, 10);
     public static readonly DateTimeOffset Now = new(2026, 3, 10, 14, 30, 0, TimeSpan.Zero);
 
+    public static readonly FakeSigner Signer = new();
+
     public static TaxRate Normal { get; } = TaxRate.Create(TaxRateCode.Normal, "Taxa normal", 23m).Value;
     public static TaxRate Intermediate { get; } = TaxRate.Create(TaxRateCode.Intermediate, "Taxa intermédia", 13m).Value;
     public static TaxRate Reduced { get; } = TaxRate.Create(TaxRateCode.Reduced, "Taxa reduzida", 6m).Value;

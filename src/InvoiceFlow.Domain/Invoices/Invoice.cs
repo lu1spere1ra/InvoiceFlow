@@ -72,6 +72,12 @@ public sealed class Invoice : Entity
 
     public DateOnly? DueDate { get; private set; }
 
+    /// <summary>Signature chaining this document to the previous one in its series (ADR 0004).</summary>
+    public string? Hash { get; private set; }
+
+    /// <summary>Version of the key that produced <see cref="Hash"/> (SAF-T <c>HashControl</c>).</summary>
+    public string? HashControl { get; private set; }
+
     /// <summary>Moment the document was recorded (SAF-T <c>SystemEntryDate</c>).</summary>
     public DateTimeOffset? SystemEntryDate { get; private set; }
 
@@ -296,11 +302,12 @@ public sealed class Invoice : Entity
     }
 
     /// <summary>
-    /// Issues the draft: takes the next number from <paramref name="series"/>, stamps the ATCUD and
-    /// freezes the document. All checks run before the series is touched, so a failed issue never
-    /// consumes a number.
+    /// Issues the draft: takes the next number from <paramref name="series"/>, stamps the ATCUD, signs
+    /// the document into the series hash chain and freezes it. All checks run before the series is
+    /// touched, so a failed issue never consumes a number.
     /// </summary>
-    public Result Issue(DocumentSeries series, DateOnly issueDate, DateTimeOffset systemEntryDate)
+    /// <param name="systemEntryDate">Current time in Portugal; its local clock time is what gets signed.</param>
+    public Result Issue(DocumentSeries series, DateOnly issueDate, DateTimeOffset systemEntryDate, IDocumentSigner signer)
     {
         var error =
             !IsDraft ? InvoiceErrors.NotDraft
@@ -323,6 +330,9 @@ public sealed class Invoice : Entity
         IssueDate = issueDate;
         DueDate = Type == DocumentType.Invoice ? issueDate.AddDays(PaymentTermDays) : null; // only invoices are paid later
         SystemEntryDate = systemEntryDate;
+        Hash = signer.Sign(HashChain.Message(issueDate, systemEntryDate, DocumentNumber, GrossTotal, series.LastHash));
+        HashControl = signer.KeyVersion;
+        series.RecordHash(Hash);
 
         // An invoice-receipt documents a payment received at the moment of sale.
         if (Type == DocumentType.InvoiceReceipt)

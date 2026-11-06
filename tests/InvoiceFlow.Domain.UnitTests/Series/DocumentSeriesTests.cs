@@ -13,7 +13,7 @@ public sealed class DocumentSeriesTests
 
         foreach (var invoice in invoices)
         {
-            invoice.Issue(series, TestData.Today, TestData.Now);
+            invoice.Issue(series, TestData.Today, TestData.Now, TestData.Signer);
         }
 
         invoices.Select(invoice => invoice.Number).ShouldBe([1, 2, 3, 4, 5]);
@@ -24,9 +24,9 @@ public sealed class DocumentSeriesTests
     public void Document_dates_cannot_go_back_in_time_within_a_series()
     {
         var series = TestData.Series();
-        TestData.DraftWithLine().Issue(series, TestData.Today, TestData.Now);
+        TestData.DraftWithLine().Issue(series, TestData.Today, TestData.Now, TestData.Signer);
 
-        var result = TestData.DraftWithLine().Issue(series, TestData.Today.AddDays(-1), TestData.Now);
+        var result = TestData.DraftWithLine().Issue(series, TestData.Today.AddDays(-1), TestData.Now, TestData.Signer);
 
         result.Error.ShouldBe(SeriesErrors.DateBeforeLastIssued);
         series.LastNumber.ShouldBe(1);
@@ -36,9 +36,9 @@ public sealed class DocumentSeriesTests
     public void Same_day_documents_are_allowed()
     {
         var series = TestData.Series();
-        TestData.DraftWithLine().Issue(series, TestData.Today, TestData.Now);
+        TestData.DraftWithLine().Issue(series, TestData.Today, TestData.Now, TestData.Signer);
 
-        TestData.DraftWithLine().Issue(series, TestData.Today, TestData.Now).IsSuccess.ShouldBeTrue();
+        TestData.DraftWithLine().Issue(series, TestData.Today, TestData.Now, TestData.Signer).IsSuccess.ShouldBeTrue();
     }
 
     [Theory]

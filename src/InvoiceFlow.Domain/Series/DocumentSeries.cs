@@ -40,6 +40,9 @@ public sealed class DocumentSeries : Entity
 
     public bool IsActive { get; private set; }
 
+    /// <summary>Hash of the last issued document: the "previous hash" of the next one.</summary>
+    public string? LastHash { get; private set; }
+
     public static Result<DocumentSeries> Create(DocumentType documentType, string code, string validationCode)
     {
         if (string.IsNullOrWhiteSpace(code) || code.Length > 20 ||
@@ -71,6 +74,8 @@ public sealed class DocumentSeries : Entity
         LastIssueDate = issueDate;
         return LastNumber;
     }
+
+    internal void RecordHash(string hash) => LastHash = hash;
 
     internal Error? CanIssue(DateOnly issueDate) =>
         !IsActive ? SeriesErrors.Inactive

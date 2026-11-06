@@ -15,6 +15,11 @@ public static class SeriesErrors
     public static readonly Error DateBeforeLastIssued = Error.Conflict(
         "Series.DateBeforeLastIssued", "The document date cannot be earlier than the last document issued in the series.");
 
+    public static readonly Error DuplicateCode = Error.Conflict("Series.DuplicateCode", "A series with this code already exists for the document type.");
+
+    public static Error AlreadyActive(string documentType) =>
+        Error.Conflict("Series.AlreadyActive", $"There is already an active {documentType} series. Close it before opening a new one.");
+
     public static Error NotFound(Guid id) => Error.NotFound("Series.NotFound", $"Series '{id}' was not found.");
 
     public static Error NoActiveSeries(string documentType) =>

@@ -8,7 +8,7 @@ public sealed class InvoiceLifecycleTests
     {
         var invoice = Invoice.CreateDraft(type, TestData.Customer()).Value;
         invoice.AddLine(TestData.Product(), TestData.Normal, 1, 100m);
-        invoice.Issue(TestData.Series(type), TestData.Today, TestData.Now).IsSuccess.ShouldBeTrue();
+        invoice.Issue(TestData.Series(type), TestData.Today, TestData.Now, TestData.Signer).IsSuccess.ShouldBeTrue();
         return invoice;
     }
 
