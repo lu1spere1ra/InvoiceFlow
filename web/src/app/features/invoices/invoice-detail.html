@@ -1,0 +1,112 @@
+@if (invoice.value(); as doc) {
+  <header class="page-header">
+    <div>
+      <a routerLink="/documents" class="back">Documents</a>
+      <h1>{{ doc.documentNumber ?? 'Draft ' + typeLabels[doc.type].toLowerCase() }}</h1>
+    </div>
+    <div class="actions">
+      @if (doc.status === 'Draft') {
+        <button class="btn btn-danger" [disabled]="busy()" (click)="deleteDraft()">Delete draft</button>
+        <a class="btn" [routerLink]="['/documents', doc.id, 'edit']">Edit</a>
+        <button class="btn btn-primary" [disabled]="busy()" (click)="issue()">Issue invoice</button>
+      }
+    </div>
+  </header>
+
+  @if (error()) {
+    <p class="alert" role="alert">{{ error() }}</p>
+  }
+
+  <article class="sheet" [class.is-draft]="doc.status === 'Draft'">
+    <header class="sheet-head">
+      <div>
+        <p class="doc-type">{{ typeLabels[doc.type] }}</p>
+        <p class="doc-number">{{ doc.documentNumber ?? 'Not issued' }}</p>
+        <app-status-badge [status]="doc.status" />
+      </div>
+      <dl class="meta">
+        <dt>Date</dt>
+        <dd>{{ (doc.issueDate | date: 'dd/MM/yyyy') ?? '—' }}</dd>
+        <dt>Due</dt>
+        <dd>{{ (doc.dueDate | date: 'dd/MM/yyyy') ?? doc.paymentTermDays + ' days after issue' }}</dd>
+        <dt>ATCUD</dt>
+        <dd class="atcud">{{ doc.atcud ?? '—' }}</dd>
+      </dl>
+    </header>
+
+    <section class="party">
+      <p class="muted">Billed to</p>
+      <p class="party-name">{{ doc.customer.name }}</p>
+      <p>{{ doc.customer.street }}<br />{{ doc.customer.postalCode }} {{ doc.customer.city }}</p>
+      <p>NIF {{ doc.customer.nif }}</p>
+    </section>
+
+    <div class="table-scroll">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th class="num">Qty</th>
+            <th class="num">Unit price</th>
+            <th class="num">Disc.</th>
+            <th class="num">VAT</th>
+            <th class="num">Net</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (line of doc.lines; track line.lineNumber) {
+            <tr>
+              <td>
+                {{ line.description }}
+                <div class="muted small">{{ line.productCode }}</div>
+                @if (line.exemptionReason) {
+                  <div class="muted small">{{ line.exemptionCode }}: {{ line.exemptionReason }}</div>
+                }
+              </td>
+              <td class="num">{{ line.quantity }} {{ line.unit }}</td>
+              <td class="num">{{ line.unitPrice | currency: 'EUR' : 'symbol' : '1.2-4' }}</td>
+              <td class="num">{{ line.discountPercent ? line.discountPercent + '%' : '' }}</td>
+              <td class="num">{{ line.taxPercentage / 100 | percent }}</td>
+              <td class="num">{{ line.netAmount | currency }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="sheet-foot">
+      <table class="vat">
+        <caption>VAT summary</caption>
+        <thead>
+          <tr>
+            <th>Rate</th>
+            <th class="num">Taxable</th>
+            <th class="num">VAT</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (t of doc.taxSummary; track t.code) {
+            <tr>
+              <td>{{ t.percentage / 100 | percent }}</td>
+              <td class="num">{{ t.taxableAmount | currency }}</td>
+              <td class="num">{{ t.taxAmount | currency }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <dl class="grand">
+        <dt>Net total</dt>
+        <dd class="num">{{ doc.netTotal | currency }}</dd>
+        <dt>VAT</dt>
+        <dd class="num">{{ doc.taxTotal | currency }}</dd>
+        <dt class="gross">Total</dt>
+        <dd class="num gross">{{ doc.grossTotal | currency }}</dd>
+      </dl>
+    </footer>
+  </article>
+} @else if (invoice.error()) {
+  <p class="alert">This document could not be found. <a routerLink="/documents">Back to documents</a></p>
+} @else {
+  <p class="muted">Loading document…</p>
+}

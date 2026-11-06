@@ -1,0 +1,251 @@
+/* InvoiceFlow — design tokens and base styles.
+   Palette borrows from Portuguese fiscal paperwork: ink blue on cool paper, a red reserved for stamps
+   (voided, overdue, errors). One typeface; tabular figures wherever money is shown. */
+
+:root {
+  --paper: #f6f8fb;
+  --sheet: #ffffff;
+  --ink: #13294b;
+  --ink-soft: #2c4570;
+  --muted: #5b6b82;
+  --rule: #dce3ec;
+  --rule-strong: #b9c5d4;
+  --stamp: #b4232c;
+  --paid: #1f7a55;
+  --draft: #8a5d00;
+  --focus: #3d7cf0;
+
+  --font: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --step--1: 0.8125rem;
+  --step-0: 0.9375rem;
+  --step-1: 1.125rem;
+  --step-2: 1.5rem;
+  --step-3: 2.25rem;
+
+  --radius-sm: 4px;
+  --radius: 8px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font);
+  font-size: 100%;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  font-size: var(--step-0);
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+h1 {
+  font-size: var(--step-2);
+}
+
+h2 {
+  font-size: var(--step-1);
+}
+
+a {
+  color: var(--ink-soft);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.95rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  background: var(--sheet);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn:hover {
+  border-color: var(--ink-soft);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--ink-soft);
+}
+
+.btn-danger {
+  color: var(--stamp);
+}
+
+.btn-link {
+  border: none;
+  background: none;
+  padding: 0.25rem;
+  color: var(--ink-soft);
+}
+
+/* Forms */
+.field {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.field label {
+  font-size: var(--step--1);
+  font-weight: 500;
+  color: var(--muted);
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  background: var(--sheet);
+  color: var(--ink);
+  font: inherit;
+}
+
+input[type='number'] {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.field-error {
+  font-size: var(--step--1);
+  color: var(--stamp);
+}
+
+/* Tables */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--sheet);
+}
+
+.table th {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--rule-strong);
+  font-size: var(--step--1);
+  font-weight: 500;
+  color: var(--muted);
+  text-align: left;
+}
+
+.table th.num {
+  text-align: right;
+}
+
+.table td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.table tbody tr:hover {
+  background: #f9fbfd;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+/* Page scaffolding */
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.toolbar input,
+.toolbar select {
+  flex: 0 1 14rem;
+  min-width: 10rem;
+}
+
+.toolbar input[type='search'] {
+  flex-basis: 20rem;
+}
+
+.alert {
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--stamp);
+  background: #fdf2f2;
+  color: var(--stamp);
+  margin-bottom: 1rem;
+}
+
+.empty {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
