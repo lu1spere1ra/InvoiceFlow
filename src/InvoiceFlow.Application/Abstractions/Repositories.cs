@@ -16,15 +16,29 @@ public interface ICustomerRepository
     Task<bool> NifExistsAsync(string nif, Guid? excludingCustomerId, CancellationToken cancellationToken);
 
     void Add(Customer customer);
+
+    /// <summary>Soft delete: the customer disappears from lists but documents keep referencing it.</summary>
+    void Remove(Customer customer);
 }
 
 public interface IProductRepository
 {
+    Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+
     Task<IReadOnlyDictionary<Guid, Product>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken);
+
+    Task<bool> CodeExistsAsync(string code, CancellationToken cancellationToken);
+
+    void Add(Product product);
+
+    /// <summary>Soft delete.</summary>
+    void Remove(Product product);
 }
 
 public interface ITaxRateRepository
 {
+    Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken);
+
     Task<IReadOnlyDictionary<Guid, TaxRate>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken);
 }
 
@@ -36,6 +50,9 @@ public interface IDocumentSeriesRepository
 public interface IInvoiceRepository
 {
     Task<Invoice?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+
+    /// <summary>Gross total of issued (non-voided) credit notes, against an invoice.</summary>
+    Task<decimal> GetCreditedAmountAsync(Guid originalInvoiceId, CancellationToken cancellationToken);
 
     void Add(Invoice invoice);
 

@@ -1,4 +1,5 @@
 using FluentValidation;
+using InvoiceFlow.Application.Catalog;
 using InvoiceFlow.Application.Customers;
 using InvoiceFlow.Application.Invoices;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,12 +17,21 @@ public static class DependencyInjection
         services.AddValidatorsFromAssemblyContaining<CustomerInputValidator>(includeInternalTypes: true);
 
         services.AddScoped<CreateCustomer>();
+        services.AddScoped<UpdateCustomer>();
+        services.AddScoped<DeleteCustomer>();
+
+        services.AddScoped<CreateProduct>();
+        services.AddScoped<UpdateProduct>();
+        services.AddScoped<DeleteProduct>();
 
         services.AddScoped<InvoiceDraftWriter>();
         services.AddScoped<CreateInvoiceDraft>();
         services.AddScoped<UpdateInvoiceDraft>();
         services.AddScoped<DeleteInvoiceDraft>();
         services.AddScoped<IssueInvoice>();
+        services.AddScoped<MarkInvoicePaid>();
+        services.AddScoped<VoidInvoice>();
+        services.AddScoped<CreateCreditNote>();
 
         return services;
     }

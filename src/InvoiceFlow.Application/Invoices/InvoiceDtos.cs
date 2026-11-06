@@ -30,7 +30,13 @@ public sealed record InvoiceDto(
     IReadOnlyList<TaxSummaryDto> TaxSummary,
     decimal NetTotal,
     decimal TaxTotal,
-    decimal GrossTotal);
+    decimal GrossTotal,
+    DateOnly? PaidOn,
+    string? VoidReason,
+    Guid? OriginalInvoiceId,
+    string? OriginalDocumentNumber,
+    string? CreditReason,
+    decimal CreditedAmount);
 
 public sealed record InvoiceCustomerDto(string Name, string Nif, string Street, string PostalCode, string City, string Country);
 
@@ -53,7 +59,8 @@ public sealed record TaxSummaryDto(TaxRateCode Code, decimal Percentage, decimal
 
 public static class InvoiceMappings
 {
-    public static InvoiceDto ToDto(this Invoice invoice) => new(
+    /// <param name="creditedAmount">Gross total of effective credit notes against this document.</param>
+    public static InvoiceDto ToDto(this Invoice invoice, decimal creditedAmount = 0) => new(
         invoice.Id,
         invoice.Type,
         invoice.Status,
@@ -88,5 +95,11 @@ public static class InvoiceMappings
         invoice.TaxSummary.Select(tax => new TaxSummaryDto(tax.Code, tax.Percentage, tax.TaxableAmount, tax.TaxAmount)).ToList(),
         invoice.NetTotal,
         invoice.TaxTotal,
-        invoice.GrossTotal);
+        invoice.GrossTotal,
+        invoice.PaidOn,
+        invoice.VoidReason,
+        invoice.OriginalInvoiceId,
+        invoice.OriginalDocumentNumber,
+        invoice.CreditReason,
+        creditedAmount);
 }
