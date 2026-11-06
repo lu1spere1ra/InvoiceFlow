@@ -15,6 +15,7 @@ public sealed class IssueInvoice(
     IInvoiceRepository invoices,
     IDocumentSeriesRepository series,
     IUnitOfWork unitOfWork,
+    IDocumentSigner signer,
     TimeProvider timeProvider)
 {
     public async Task<Result<InvoiceDto>> HandleAsync(Guid id, CancellationToken cancellationToken)
@@ -31,7 +32,8 @@ public sealed class IssueInvoice(
             return SeriesErrors.NoActiveSeries(invoice.Type.ToCode());
         }
 
-        var issued = invoice.Issue(activeSeries, timeProvider.TodayInPortugal(), timeProvider.GetUtcNow());
+        var now = timeProvider.NowInPortugal();
+        var issued = invoice.Issue(activeSeries, DateOnly.FromDateTime(now.DateTime), now, signer);
         if (issued.IsFailure)
         {
             return issued.Error;

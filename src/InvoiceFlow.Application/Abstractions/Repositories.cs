@@ -44,7 +44,13 @@ public interface ITaxRateRepository
 
 public interface IDocumentSeriesRepository
 {
+    Task<DocumentSeries?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+
     Task<DocumentSeries?> GetActiveAsync(DocumentType documentType, CancellationToken cancellationToken);
+
+    Task<bool> ExistsAsync(DocumentType documentType, string code, CancellationToken cancellationToken);
+
+    void Add(DocumentSeries series);
 }
 
 public interface IInvoiceRepository
@@ -53,6 +59,9 @@ public interface IInvoiceRepository
 
     /// <summary>Gross total of issued (non-voided) credit notes, against an invoice.</summary>
     Task<decimal> GetCreditedAmountAsync(Guid originalInvoiceId, CancellationToken cancellationToken);
+
+    /// <summary>Every issued document of a series (including voided ones), for hash-chain verification.</summary>
+    Task<IReadOnlyList<Invoice>> ListIssuedInSeriesAsync(Guid seriesId, CancellationToken cancellationToken);
 
     void Add(Invoice invoice);
 

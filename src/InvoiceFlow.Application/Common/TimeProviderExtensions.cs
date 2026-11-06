@@ -9,5 +9,9 @@ public static class TimeProviderExtensions
     /// depend on the server's time zone (containers usually run in UTC).
     /// </summary>
     public static DateOnly TodayInPortugal(this TimeProvider timeProvider) =>
-        DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(timeProvider.GetUtcNow(), Lisbon).DateTime);
+        DateOnly.FromDateTime(timeProvider.NowInPortugal().DateTime);
+
+    /// <summary>Current time with the Lisbon offset; SAF-T and the hash chain use local clock time.</summary>
+    public static DateTimeOffset NowInPortugal(this TimeProvider timeProvider) =>
+        TimeZoneInfo.ConvertTime(timeProvider.GetUtcNow(), Lisbon);
 }

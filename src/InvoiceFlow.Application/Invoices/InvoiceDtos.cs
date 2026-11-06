@@ -36,7 +36,8 @@ public sealed record InvoiceDto(
     Guid? OriginalInvoiceId,
     string? OriginalDocumentNumber,
     string? CreditReason,
-    decimal CreditedAmount);
+    decimal CreditedAmount,
+    string? HashExcerpt);
 
 public sealed record InvoiceCustomerDto(string Name, string Nif, string Street, string PostalCode, string City, string Country);
 
@@ -101,5 +102,6 @@ public static class InvoiceMappings
         invoice.OriginalInvoiceId,
         invoice.OriginalDocumentNumber,
         invoice.CreditReason,
-        creditedAmount);
+        creditedAmount,
+        HashChain.Excerpt(invoice.Hash) is { Length: > 0 } excerpt ? excerpt : null);
 }

@@ -18,7 +18,9 @@ public sealed class IssueInvoiceTests
     // 23:30 UTC on 31 March is already 1 April in Lisbon (summer time, UTC+1).
     private readonly FixedTimeProvider _clock = new(new DateTimeOffset(2026, 3, 31, 23, 30, 0, TimeSpan.Zero));
 
-    private IssueInvoice Handler => new(_invoices, _series, _unitOfWork, _clock);
+    private readonly IDocumentSigner _signer = Substitute.For<IDocumentSigner>();
+
+    private IssueInvoice Handler => new(_invoices, _series, _unitOfWork, _signer, _clock);
 
     [Fact]
     public async Task Issues_with_todays_date_in_portugal()
@@ -32,6 +34,7 @@ public sealed class IssueInvoiceTests
 
         result.Value.IssueDate.ShouldBe(new DateOnly(2026, 4, 1));
         result.Value.DocumentNumber.ShouldBe("FT 2026A/1");
+        _signer.Received(1).Sign(Arg.Is<string>(m => m.StartsWith("2026-04-01;2026-04-01T00:30:00;FT 2026A/1;12.30;", StringComparison.Ordinal)));
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
