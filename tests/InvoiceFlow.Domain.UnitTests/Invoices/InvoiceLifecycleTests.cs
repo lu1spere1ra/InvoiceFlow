@@ -19,6 +19,7 @@ public sealed class InvoiceLifecycleTests
 
         receipt.Status.ShouldBe(InvoiceStatus.Paid);
         receipt.PaidOn.ShouldBe(TestData.Today);
+        receipt.DueDate.ShouldBeNull();
         receipt.DocumentNumber.ShouldBe("FR 2026A/1");
     }
 

@@ -321,7 +321,7 @@ public sealed class Invoice : Entity
         DocumentNumber = series.FormatDocumentNumber(number);
         Atcud = series.FormatAtcud(number);
         IssueDate = issueDate;
-        DueDate = issueDate.AddDays(PaymentTermDays);
+        DueDate = Type == DocumentType.Invoice ? issueDate.AddDays(PaymentTermDays) : null; // only invoices are paid later
         SystemEntryDate = systemEntryDate;
 
         // An invoice-receipt documents a payment received at the moment of sale.
