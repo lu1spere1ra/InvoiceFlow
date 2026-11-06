@@ -1,4 +1,5 @@
 using InvoiceFlow.Application.Auth;
+using InvoiceFlow.Application.Common;
 using InvoiceFlow.Application.Series;
 using InvoiceFlow.Domain.Customers;
 using InvoiceFlow.Domain.Invoices;
@@ -18,6 +19,7 @@ public sealed class DatabaseInitializer(
     UserManager<ApplicationUser> users,
     RoleManager<IdentityRole<Guid>> roles,
     IAtSeriesRegistry seriesRegistry,
+    IDocumentSigner signer,
     TimeProvider timeProvider,
     ILogger<DatabaseInitializer> logger)
 {
@@ -37,8 +39,10 @@ public sealed class DatabaseInitializer(
 
         if (seedDemoData)
         {
-            SeedProducts(rates);
-            SeedCustomers();
+            var products = SeedProducts(rates);
+            var customers = SeedCustomers();
+            await new DemoDocumentSeeder(db, seriesRegistry, signer)
+                .SeedAsync(customers, products, rates.Values.ToDictionary(r => r.Id), timeProvider.TodayInPortugal(), cancellationToken);
         }
 
         await db.SaveChangesAsync(cancellationToken);
@@ -107,7 +111,7 @@ public sealed class DatabaseInitializer(
         }
     }
 
-    private void SeedProducts(Dictionary<TaxRateCode, TaxRate> rates)
+    private List<Product> SeedProducts(Dictionary<TaxRateCode, TaxRate> rates)
     {
         (string Code, string Description, ProductType Type, string Unit, decimal Price, TaxRateCode Rate)[] products =
         [
@@ -121,13 +125,12 @@ public sealed class DatabaseInitializer(
             ("LIVRO-01", "Livro técnico", ProductType.Goods, "UN", 34.90m, TaxRateCode.Reduced),
         ];
 
-        foreach (var p in products)
-        {
-            db.Products.Add(Product.Create(p.Code, p.Description, p.Type, p.Unit, p.Price, rates[p.Rate].Id).Value);
-        }
+        var created = products.Select(p => Product.Create(p.Code, p.Description, p.Type, p.Unit, p.Price, rates[p.Rate].Id).Value).ToList();
+        db.Products.AddRange(created);
+        return created;
     }
 
-    private void SeedCustomers()
+    private List<Customer> SeedCustomers()
     {
         (string Name, string Nif, string Street, string PostalCode, string City, string? Email)[] customers =
         [
@@ -141,9 +144,8 @@ public sealed class DatabaseInitializer(
             ("Ana Martins", "213456788", "Rua das Flores 7, 2.º Esq.", "2750-319", "Cascais", "ana.martins@example.pt"),
         ];
 
-        foreach (var c in customers)
-        {
-            db.Customers.Add(Customer.Create(c.Name, c.Nif, new Address(c.Street, c.PostalCode, c.City), c.Email).Value);
-        }
+        var created = customers.Select(c => Customer.Create(c.Name, c.Nif, new Address(c.Street, c.PostalCode, c.City), c.Email).Value).ToList();
+        db.Customers.AddRange(created);
+        return created;
     }
 }
