@@ -9,7 +9,7 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <!-- Required for IDE0005 (unused usings) to be enforced at build time; missing XML docs are not an error. -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
     <InvariantGlobalization>false</InvariantGlobalization>
   </PropertyGroup>
 </Project>

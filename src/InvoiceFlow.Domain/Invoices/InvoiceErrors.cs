@@ -32,5 +32,36 @@ public static class InvoiceErrors
         "Invoice.FinalConsumerLimitExceeded",
         $"Documents for an anonymous final consumer cannot exceed {Invoice.FinalConsumerLimit:0.00} EUR. Identify the customer's NIF.");
 
+    public static readonly Error NotIssued = Error.Conflict("Invoice.NotIssued", "Only issued documents can be paid or voided.");
+
+    public static readonly Error OnlyInvoicesArePaid = new(
+        "Invoice.OnlyInvoicesArePaid", "Only invoices (FT) are marked as paid. Invoice-receipts are paid when issued.");
+
+    public static readonly Error PaymentInFuture = new("Invoice.PaymentInFuture", "The payment date cannot be in the future.");
+
+    public static readonly Error PaymentBeforeIssue = new("Invoice.PaymentBeforeIssue", "The payment date cannot be earlier than the invoice date.");
+
+    public static readonly Error VoidReasonRequired = new("Invoice.VoidReasonRequired", "State why the document is being voided.");
+
+    public static readonly Error HasCreditNotes = Error.Conflict(
+        "Invoice.HasCreditNotes", "This document has credit notes. Void the credit notes first or issue a new credit note.");
+
+    public static readonly Error CreditNoteRequiresOriginal = new(
+        "Invoice.CreditNoteRequiresOriginal", "Credit notes are created from an issued invoice.");
+
+    public static readonly Error CreditNoteIsFixed = Error.Conflict(
+        "Invoice.CreditNoteIsFixed", "Credit note lines come from the original invoice and cannot be edited. Delete the draft and create it again.");
+
+    public static readonly Error NotCreditable = Error.Conflict(
+        "Invoice.NotCreditable", "Only issued or paid invoices and invoice-receipts can be credited.");
+
+    public static readonly Error CreditReasonRequired = new("Invoice.CreditReasonRequired", "State the reason for the credit note.");
+
+    public static readonly Error CreditQuantityInvalid = new(
+        "Invoice.CreditQuantityInvalid", "Credited quantities must be greater than zero and not exceed the original quantity.");
+
+    public static readonly Error CreditExceedsRemaining = new(
+        "Invoice.CreditExceedsRemaining", "The credit note exceeds the amount still creditable on the original invoice.");
+
     public static Error NotFound(Guid id) => Error.NotFound("Invoice.NotFound", $"Document '{id}' was not found.");
 }

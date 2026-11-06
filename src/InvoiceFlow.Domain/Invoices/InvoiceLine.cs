@@ -71,4 +71,22 @@ public sealed class InvoiceLine
     public decimal NetAmount { get; private set; }
 
     internal void Renumber(int lineNumber) => LineNumber = lineNumber;
+
+    /// <summary>Copy used by credit notes: same product, price, VAT and exemption, different quantity.</summary>
+    internal InvoiceLine CopyFor(int lineNumber, decimal quantity) => new()
+    {
+        LineNumber = lineNumber,
+        ProductId = ProductId,
+        ProductCode = ProductCode,
+        Description = Description,
+        Unit = Unit,
+        Quantity = quantity,
+        UnitPrice = UnitPrice,
+        DiscountPercent = DiscountPercent,
+        TaxCode = TaxCode,
+        TaxPercentage = TaxPercentage,
+        ExemptionCode = ExemptionCode,
+        ExemptionReason = ExemptionReason,
+        NetAmount = Money.Round(quantity * UnitPrice * (1 - (DiscountPercent / 100m))),
+    };
 }
