@@ -35,4 +35,29 @@ public sealed class CustomersController : ApiControllerBase
             ? CreatedAtAction(nameof(Get), new { id = result.Value.Id }, result.Value)
             : Problem(result.Error);
     }
+
+    [Authorize(Roles = Roles.Writers)]
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType<CustomerDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<CustomerDto>> Update(
+        Guid id, CustomerInput input, [FromServices] UpdateCustomer handler, CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(id, input, cancellationToken);
+        return result.IsSuccess ? result.Value : Problem(result.Error);
+    }
+
+    /// <summary>Hides the customer from lists and pickers. Existing documents are not affected.</summary>
+    [Authorize(Roles = Roles.Writers)]
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(Guid id, [FromServices] DeleteCustomer handler, CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(id, cancellationToken);
+        return result.IsSuccess ? NoContent() : Problem(result.Error);
+    }
 }

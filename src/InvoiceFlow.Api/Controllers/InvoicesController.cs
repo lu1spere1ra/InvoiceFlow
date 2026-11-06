@@ -75,4 +75,49 @@ public sealed class InvoicesController : ApiControllerBase
         var result = await handler.HandleAsync(id, cancellationToken);
         return result.IsSuccess ? result.Value : Problem(result.Error);
     }
+
+    /// <summary>Records the payment of an issued invoice (FT). Defaults to today.</summary>
+    [Authorize(Roles = Roles.Writers)]
+    [HttpPost("{id:guid}/pay")]
+    [ProducesResponseType<InvoiceDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<InvoiceDto>> Pay(
+        Guid id, MarkPaidInput input, [FromServices] MarkInvoicePaid handler, CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(id, input, cancellationToken);
+        return result.IsSuccess ? result.Value : Problem(result.Error);
+    }
+
+    /// <summary>Voids an issued document. It keeps its number and stays in the SAF-T file as cancelled.</summary>
+    [Authorize(Roles = Roles.Writers)]
+    [HttpPost("{id:guid}/void")]
+    [ProducesResponseType<InvoiceDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<InvoiceDto>> Void(
+        Guid id, VoidInput input, [FromServices] VoidInvoice handler, CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(id, input, cancellationToken);
+        return result.IsSuccess ? result.Value : Problem(result.Error);
+    }
+
+    /// <summary>Creates a draft credit note against an issued invoice.</summary>
+    [Authorize(Roles = Roles.Writers)]
+    [HttpPost("{id:guid}/credit-notes")]
+    [ProducesResponseType<InvoiceDto>(StatusCodes.Status201Created)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<InvoiceDto>> CreateCreditNote(
+        Guid id, CreateCreditNoteInput input, [FromServices] CreateCreditNote handler, CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(id, input, cancellationToken);
+        return result.IsSuccess
+            ? CreatedAtAction(nameof(Get), new { id = result.Value.Id }, result.Value)
+            : Problem(result.Error);
+    }
 }
