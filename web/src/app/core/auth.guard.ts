@@ -9,6 +9,11 @@ export const authGuard: CanActivateFn = (_route, state) => {
     : inject(Router).createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
 };
 
+export const adminGuard: CanActivateFn = () => {
+  const auth = inject(Auth);
+  return auth.hasAnyRole('Admin') ? true : inject(Router).createUrlTree(['/documents']);
+};
+
 export const writerGuard: CanActivateFn = () => {
   const auth = inject(Auth);
   return auth.canWrite() ? true : inject(Router).createUrlTree(['/documents']);

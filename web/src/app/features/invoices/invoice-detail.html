@@ -5,6 +5,7 @@
       <h1>{{ doc.documentNumber ?? 'Draft ' + typeLabels[doc.type].toLowerCase() }}</h1>
     </div>
     <div class="actions">
+      <button class="btn" type="button" (click)="downloadPdf(doc)">Download PDF</button>
       @if (doc.status === 'Draft' && auth.canWrite()) {
         <button class="btn btn-danger" [disabled]="busy()" (click)="deleteDraft()">
           Delete draft
@@ -81,6 +82,12 @@
         </dd>
         <dt>ATCUD</dt>
         <dd class="atcud">{{ doc.atcud ?? '—' }}</dd>
+        @if (doc.hashExcerpt) {
+          <dt>Hash</dt>
+          <dd class="atcud" title="Characters 1, 11, 21 and 31 of the document signature">
+            {{ doc.hashExcerpt }}
+          </dd>
+        }
         @if (doc.paidOn) {
           <dt>Paid</dt>
           <dd>{{ doc.paidOn | date: 'dd/MM/yyyy' }}</dd>

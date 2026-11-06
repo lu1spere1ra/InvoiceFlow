@@ -5,10 +5,13 @@ import {
   Customer,
   CreditNoteInput,
   CustomerInput,
+  DocumentType,
   Invoice,
   InvoiceDraftInput,
   Product,
   ProductInput,
+  Series,
+  SeriesVerification,
 } from './models';
 
 /** Write operations. Reads use httpResource directly in components. */
@@ -62,6 +65,22 @@ export class Api {
 
   void(id: string, reason: string) {
     return this.http.post<Invoice>(`/api/invoices/${id}/void`, { reason });
+  }
+
+  pdf(id: string) {
+    return this.http.get(`/api/invoices/${id}/pdf`, { responseType: 'blob' });
+  }
+
+  createSeries(documentType: DocumentType, code: string) {
+    return this.http.post<Series>('/api/series', { documentType, code });
+  }
+
+  closeSeries(id: string) {
+    return this.http.post<Series>(`/api/series/${id}/close`, null);
+  }
+
+  verifySeries(id: string) {
+    return this.http.get<SeriesVerification>(`/api/series/${id}/verification`);
   }
 
   createCreditNote(id: string, input: CreditNoteInput) {

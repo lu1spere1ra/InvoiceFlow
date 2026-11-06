@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, writerGuard } from './core/auth.guard';
+import { adminGuard, authGuard, writerGuard } from './core/auth.guard';
 
 export const routes: Routes = [
   {
@@ -54,6 +54,12 @@ export const routes: Routes = [
         path: 'products',
         title: 'Products · InvoiceFlow',
         loadComponent: () => import('./features/products/product-list').then((m) => m.ProductList),
+      },
+      {
+        path: 'series',
+        canActivate: [adminGuard],
+        title: 'Series · InvoiceFlow',
+        loadComponent: () => import('./features/series/series-list').then((m) => m.SeriesList),
       },
       {
         path: 'customers/new',

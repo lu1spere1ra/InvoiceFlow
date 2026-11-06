@@ -113,6 +113,24 @@ export interface Invoice {
   originalDocumentNumber: string | null;
   creditReason: string | null;
   creditedAmount: number;
+  hashExcerpt: string | null;
+}
+
+export interface Series {
+  id: string;
+  documentType: DocumentType;
+  code: string;
+  validationCode: string;
+  lastNumber: number;
+  lastIssueDate: string | null;
+  isActive: boolean;
+}
+
+export interface SeriesVerification {
+  seriesId: string;
+  documentsChecked: number;
+  isValid: boolean;
+  firstBrokenNumber: number | null;
 }
 
 export type ProductInput = Omit<Product, 'id'>;

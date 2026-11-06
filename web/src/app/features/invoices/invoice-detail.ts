@@ -32,6 +32,20 @@ export class InvoiceDetail {
     this.run(this.api.issue(this.id()), () => this.invoice.reload());
   }
 
+  protected downloadPdf(doc: Invoice): void {
+    this.api.pdf(doc.id).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${(doc.documentNumber ?? 'draft').replaceAll(' ', '_').replaceAll('/', '-')}.pdf`;
+        link.click();
+        URL.revokeObjectURL(url);
+      },
+      error: (e: unknown) => this.error.set(problemMessage(e)),
+    });
+  }
+
   /** Which inline confirmation panel is open. */
   protected readonly pending = signal<'pay' | 'void' | null>(null);
   protected readonly today = new Date().toISOString().slice(0, 10);
