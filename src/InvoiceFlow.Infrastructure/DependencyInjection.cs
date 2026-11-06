@@ -2,6 +2,7 @@ using InvoiceFlow.Application.Abstractions;
 using InvoiceFlow.Application.Catalog;
 using InvoiceFlow.Application.Common;
 using InvoiceFlow.Application.Customers;
+using InvoiceFlow.Application.Dashboard;
 using InvoiceFlow.Application.Invoices;
 using InvoiceFlow.Application.Saft;
 using InvoiceFlow.Application.Series;
@@ -50,6 +51,7 @@ public static class DependencyInjection
         services.AddScoped<IInvoiceQueries, InvoiceQueries>();
         services.AddScoped<ICatalogQueries, CatalogQueries>();
         services.AddScoped<ISeriesQueries, SeriesQueries>();
+        services.AddScoped<IDashboardQueries, DashboardQueries>();
 
         services.AddSingleton(configuration.GetSection("Company").Get<CompanyProfile>() ?? new CompanyProfile());
         services.AddOptions<SigningOptions>().Bind(configuration.GetSection(SigningOptions.SectionName));
