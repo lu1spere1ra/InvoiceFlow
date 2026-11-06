@@ -27,6 +27,7 @@ services:
       ConnectionStrings__Default: "Server=db;Database=InvoiceFlow;User Id=sa;Password=InvoiceFlow!2026;TrustServerCertificate=True"
       Database__InitializeOnStartup: "true"
       Database__SeedDemoData: "true"
+      Jwt__SigningKey: "compose-demo-signing-key-replace-in-real-deployments"
     ports:
       - "5101:8080"
     depends_on:
