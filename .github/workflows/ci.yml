@@ -27,3 +27,35 @@ jobs:
       # Integration tests start SQL Server through Testcontainers; Docker is available on ubuntu-latest.
       - name: Test
         run: dotnet test --no-build --configuration Release
+
+  frontend:
+    name: Frontend build & tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+  docker:
+    name: Docker images
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build API image
+        run: docker build --file src/InvoiceFlow.Api/Dockerfile --tag invoiceflow-api:${{ github.sha }} .
+
+      - name: Build web image
+        run: docker build --tag invoiceflow-web:${{ github.sha }} web
