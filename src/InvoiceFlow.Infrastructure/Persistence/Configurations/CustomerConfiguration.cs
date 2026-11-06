@@ -13,8 +13,10 @@ internal sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
             .HasMaxLength(9)
             .IsUnicode(false);
 
-        // Many anonymous "Consumidor final" records may exist; every other NIF is unique.
-        builder.HasIndex(c => c.Nif).IsUnique().HasFilter($"[Nif] <> '{Nif.FinalConsumerValue}'");
+        // Many anonymous "Consumidor final" records may exist; every other active NIF is unique.
+        builder.HasIndex(c => c.Nif).IsUnique().HasFilter($"[Nif] <> '{Nif.FinalConsumerValue}' AND [IsDeleted] = 0");
+
+        builder.HasQueryFilter(c => !EF.Property<bool>(c, ShadowProperties.IsDeleted));
 
         builder.ComplexProperty(c => c.Address, address =>
         {

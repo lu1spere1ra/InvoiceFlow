@@ -1,3 +1,4 @@
+using InvoiceFlow.Domain.Common;
 using InvoiceFlow.Domain.Customers;
 using InvoiceFlow.Domain.Invoices;
 using InvoiceFlow.Domain.Products;
@@ -29,6 +30,26 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         base.OnModelCreating(builder);
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        AddAuditColumns(builder);
+    }
+
+    /// <summary>Audit and soft-delete columns as shadow properties, so the domain model stays free of them.</summary>
+    private static void AddAuditColumns(ModelBuilder builder)
+    {
+        foreach (var entityType in builder.Model.GetEntityTypes().Where(t => typeof(Entity).IsAssignableFrom(t.ClrType)))
+        {
+            var entity = builder.Entity(entityType.ClrType);
+            entity.Property<DateTimeOffset>(ShadowProperties.CreatedAt);
+            entity.Property<string>(ShadowProperties.CreatedBy).HasMaxLength(256);
+            entity.Property<DateTimeOffset?>(ShadowProperties.UpdatedAt);
+            entity.Property<string?>(ShadowProperties.UpdatedBy).HasMaxLength(256);
+
+            if (typeof(ISoftDeletable).IsAssignableFrom(entityType.ClrType))
+            {
+                entity.Property<bool>(ShadowProperties.IsDeleted);
+                entity.Property<DateTimeOffset?>(ShadowProperties.DeletedAt);
+            }
+        }
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)

@@ -29,9 +29,22 @@ namespace InvoiceFlow.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<string>("Email")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -43,6 +56,13 @@ namespace InvoiceFlow.Infrastructure.Persistence.Migrations
                         .HasMaxLength(9)
                         .IsUnicode(false)
                         .HasColumnType("varchar(9)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.ComplexProperty(typeof(Dictionary<string, object>), "Address", "InvoiceFlow.Domain.Customers.Customer.Address#Address", b1 =>
                         {
@@ -80,7 +100,7 @@ namespace InvoiceFlow.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Nif")
                         .IsUnique()
-                        .HasFilter("[Nif] <> '999999990'");
+                        .HasFilter("[Nif] <> '999999990' AND [IsDeleted] = 0");
 
                     b.ToTable("Customers");
                 });
@@ -94,6 +114,17 @@ namespace InvoiceFlow.Infrastructure.Persistence.Migrations
                     b.Property<string>("Atcud")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("CreditReason")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uniqueidentifier");
@@ -119,6 +150,16 @@ namespace InvoiceFlow.Infrastructure.Persistence.Migrations
                     b.Property<int?>("Number")
                         .HasColumnType("int");
 
+                    b.Property<string>("OriginalDocumentNumber")
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<Guid?>("OriginalInvoiceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly?>("PaidOn")
+                        .HasColumnType("date");
+
                     b.Property<int>("PaymentTermDays")
                         .HasColumnType("int");
 
@@ -141,6 +182,20 @@ namespace InvoiceFlow.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("VoidReason")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset?>("VoidedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.ComplexProperty(typeof(Dictionary<string, object>), "Customer", "InvoiceFlow.Domain.Invoices.Invoice.Customer#CustomerSnapshot", b1 =>
                         {
@@ -198,6 +253,9 @@ namespace InvoiceFlow.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasFilter("[DocumentNumber] IS NOT NULL");
 
+                    b.HasIndex("OriginalInvoiceId")
+                        .HasFilter("[OriginalInvoiceId] IS NOT NULL");
+
                     b.HasIndex("SeriesId", "Number")
                         .IsUnique()
                         .HasFilter("[Number] IS NOT NULL");
@@ -218,10 +276,23 @@ namespace InvoiceFlow.Infrastructure.Persistence.Migrations
                         .HasMaxLength(60)
                         .HasColumnType("nvarchar(60)");
 
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<Guid>("TaxRateId")
                         .HasColumnType("uniqueidentifier");
@@ -240,10 +311,18 @@ namespace InvoiceFlow.Infrastructure.Persistence.Migrations
                         .HasPrecision(18, 4)
                         .HasColumnType("decimal(18,4)");
 
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Code")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
 
                     b.HasIndex("TaxRateId");
 
@@ -260,6 +339,13 @@ namespace InvoiceFlow.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("DocumentType")
                         .IsRequired()
@@ -279,6 +365,13 @@ namespace InvoiceFlow.Infrastructure.Persistence.Migrations
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("ValidationCode")
                         .IsRequired()
@@ -304,6 +397,13 @@ namespace InvoiceFlow.Infrastructure.Persistence.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -312,6 +412,13 @@ namespace InvoiceFlow.Infrastructure.Persistence.Migrations
                     b.Property<decimal>("Percentage")
                         .HasPrecision(5, 2)
                         .HasColumnType("decimal(5,2)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
 
@@ -579,6 +686,11 @@ namespace InvoiceFlow.Infrastructure.Persistence.Migrations
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("InvoiceFlow.Domain.Invoices.Invoice", null)
+                        .WithMany()
+                        .HasForeignKey("OriginalInvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("InvoiceFlow.Domain.Series.DocumentSeries", null)
                         .WithMany()

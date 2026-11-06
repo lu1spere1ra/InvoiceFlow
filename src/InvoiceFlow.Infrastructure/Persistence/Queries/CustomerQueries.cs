@@ -27,8 +27,17 @@ internal sealed class CustomerQueries(AppDbContext db) : ICustomerQueries
         }
 
         var total = await customers.CountAsync(cancellationToken);
-        var page = await customers
-            .OrderBy(c => c.Name)
+        var sorted = (query.SortBy, query.Descending) switch
+        {
+            (CustomerSort.Nif, false) => customers.OrderBy(c => c.Nif),
+            (CustomerSort.Nif, true) => customers.OrderByDescending(c => c.Nif),
+            (CustomerSort.City, false) => customers.OrderBy(c => c.Address.City).ThenBy(c => c.Name),
+            (CustomerSort.City, true) => customers.OrderByDescending(c => c.Address.City).ThenBy(c => c.Name),
+            (_, true) => customers.OrderByDescending(c => c.Name),
+            _ => customers.OrderBy(c => c.Name),
+        };
+
+        var page = await sorted
             .Skip(query.Skip)
             .Take(query.PageSize)
             .ToListAsync(cancellationToken);

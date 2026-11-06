@@ -4,6 +4,7 @@ using InvoiceFlow.Application.Customers;
 using InvoiceFlow.Application.Invoices;
 using InvoiceFlow.Infrastructure.Identity;
 using InvoiceFlow.Infrastructure.Persistence;
+using InvoiceFlow.Infrastructure.Persistence.Interceptors;
 using InvoiceFlow.Infrastructure.Persistence.Queries;
 using InvoiceFlow.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +20,13 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("Default")
             ?? throw new InvalidOperationException("Connection string 'Default' is not configured.");
 
-        services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
+        services.AddScoped<AuditingInterceptor>();
+        services.AddSingleton<IssuedDocumentGuardInterceptor>();
+        services.AddDbContext<AppDbContext>((provider, options) => options
+            .UseSqlServer(connectionString)
+            .AddInterceptors(
+                provider.GetRequiredService<AuditingInterceptor>(),
+                provider.GetRequiredService<IssuedDocumentGuardInterceptor>()));
 
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<IUnitOfWork, UnitOfWork>();

@@ -21,7 +21,8 @@ internal sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.Code).HasMaxLength(60);
         builder.Property(p => p.Unit).HasMaxLength(20);
         builder.Property(p => p.UnitPrice).HasPrecision(18, 4);
-        builder.HasIndex(p => p.Code).IsUnique();
+        builder.HasIndex(p => p.Code).IsUnique().HasFilter("[IsDeleted] = 0");
+        builder.HasQueryFilter(p => !EF.Property<bool>(p, ShadowProperties.IsDeleted));
         builder.HasOne<TaxRate>().WithMany().HasForeignKey(p => p.TaxRateId).OnDelete(DeleteBehavior.Restrict);
     }
 }

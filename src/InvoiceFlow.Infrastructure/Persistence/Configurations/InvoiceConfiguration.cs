@@ -28,6 +28,9 @@ internal sealed class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
 
         builder.Property(i => i.DocumentNumber).HasMaxLength(60);
         builder.Property(i => i.Atcud).HasMaxLength(100);
+        builder.Property(i => i.OriginalDocumentNumber).HasMaxLength(60);
+        builder.HasOne<Invoice>().WithMany().HasForeignKey(i => i.OriginalInvoiceId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(i => i.OriginalInvoiceId).HasFilter("[OriginalInvoiceId] IS NOT NULL");
 
         // Last line of defence for numbering: even a bug elsewhere cannot persist a duplicate number.
         builder.HasIndex(i => new { i.SeriesId, i.Number }).IsUnique().HasFilter("[Number] IS NOT NULL");
