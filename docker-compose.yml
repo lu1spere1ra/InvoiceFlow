@@ -1,0 +1,44 @@
+# docker compose up --build
+# Web: http://localhost:5100  ·  API docs: http://localhost:5101/scalar  ·  SQL Server: localhost,5102
+name: invoiceflow
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "InvoiceFlow!2026" # local demo only
+    ports:
+      - "5102:1433"
+    volumes:
+      - sqldata:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 15s
+
+  api:
+    build:
+      context: .
+      dockerfile: src/InvoiceFlow.Api/Dockerfile
+    environment:
+      ConnectionStrings__Default: "Server=db;Database=InvoiceFlow;User Id=sa;Password=InvoiceFlow!2026;TrustServerCertificate=True"
+      Database__InitializeOnStartup: "true"
+      Database__SeedDemoData: "true"
+    ports:
+      - "5101:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build: ./web
+    ports:
+      - "5100:80"
+    depends_on:
+      - api
+
+volumes:
+  sqldata:
