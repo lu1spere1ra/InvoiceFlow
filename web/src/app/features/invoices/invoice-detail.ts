@@ -4,6 +4,7 @@ import { Component, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Api } from '../../core/api';
+import { Auth } from '../../core/auth';
 import { Invoice, documentTypeLabels } from '../../core/models';
 import { problemMessage } from '../../core/problem';
 import { StatusBadge } from '../../shared/status-badge';
@@ -17,6 +18,7 @@ import { StatusBadge } from '../../shared/status-badge';
 export class InvoiceDetail {
   private readonly api = inject(Api);
   private readonly router = inject(Router);
+  protected readonly auth = inject(Auth);
 
   readonly id = input.required<string>();
 

@@ -41,15 +41,26 @@
     @for (line of lines.controls; track line; let i = $index) {
       <div class="line" [formGroupName]="i">
         <div class="product">
-          <select formControlName="productId" (change)="productChanged(i)" [attr.aria-label]="'Product, line ' + (i + 1)">
+          <select
+            formControlName="productId"
+            (change)="productChanged(i)"
+            [attr.aria-label]="'Product, line ' + (i + 1)"
+          >
             <option value="" disabled>Choose…</option>
             @for (p of products.value(); track p.id) {
               <option [value]="p.id">{{ p.code }} — {{ p.description }}</option>
             }
           </select>
-          <input formControlName="description" placeholder="Description on the invoice" [attr.aria-label]="'Description, line ' + (i + 1)" />
+          <input
+            formControlName="description"
+            placeholder="Description on the invoice"
+            [attr.aria-label]="'Description, line ' + (i + 1)"
+          />
           @if (isExempt(i)) {
-            <select formControlName="exemptionCode" [attr.aria-label]="'Exemption reason, line ' + (i + 1)">
+            <select
+              formControlName="exemptionCode"
+              [attr.aria-label]="'Exemption reason, line ' + (i + 1)"
+            >
               <option value="">Exemption reason (required)</option>
               @for (r of exemptionReasons.value(); track r.code) {
                 <option [value]="r.code">{{ r.code }} — {{ r.description }}</option>
@@ -57,16 +68,42 @@
             </select>
           }
         </div>
-        <input type="number" step="any" min="0" formControlName="quantity" [attr.aria-label]="'Quantity, line ' + (i + 1)" />
-        <input type="number" step="0.01" min="0" formControlName="unitPrice" [attr.aria-label]="'Unit price, line ' + (i + 1)" />
-        <input type="number" step="1" min="0" max="100" formControlName="discountPercent" [attr.aria-label]="'Discount, line ' + (i + 1)" />
+        <input
+          type="number"
+          step="any"
+          min="0"
+          formControlName="quantity"
+          [attr.aria-label]="'Quantity, line ' + (i + 1)"
+        />
+        <input
+          type="number"
+          step="0.01"
+          min="0"
+          formControlName="unitPrice"
+          [attr.aria-label]="'Unit price, line ' + (i + 1)"
+        />
+        <input
+          type="number"
+          step="1"
+          min="0"
+          max="100"
+          formControlName="discountPercent"
+          [attr.aria-label]="'Discount, line ' + (i + 1)"
+        />
         <select formControlName="taxRateId" [attr.aria-label]="'VAT rate, line ' + (i + 1)">
           @for (r of taxRates.value(); track r.id) {
             <option [value]="r.id">{{ r.percentage }}%</option>
           }
         </select>
         <span class="num net">{{ totals().lineNets[i] | currency }}</span>
-        <button type="button" class="btn-link remove" (click)="removeLine(i)" [attr.aria-label]="'Remove line ' + (i + 1)">✕</button>
+        <button
+          type="button"
+          class="btn-link remove"
+          (click)="removeLine(i)"
+          [attr.aria-label]="'Remove line ' + (i + 1)"
+        >
+          ✕
+        </button>
       </div>
     }
 
@@ -89,8 +126,12 @@
 
     <div class="actions">
       <button class="btn" type="submit" [disabled]="saving()">Save draft</button>
-      <button class="btn btn-primary" type="button" [disabled]="saving()" (click)="save(true)">Save and issue</button>
+      <button class="btn btn-primary" type="button" [disabled]="saving()" (click)="save(true)">
+        Save and issue
+      </button>
     </div>
-    <p class="muted hint">Issuing assigns the next number in the series. Issued documents can no longer be edited.</p>
+    <p class="muted hint">
+      Issuing assigns the next number in the series. Issued documents can no longer be edited.
+    </p>
   </section>
 </form>

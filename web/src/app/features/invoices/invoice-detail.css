@@ -18,12 +18,18 @@
   background: var(--sheet);
   border: 1px solid var(--rule);
   border-top: 6px solid var(--ink);
-  box-shadow: 0 1px 0 var(--rule), 0 12px 32px -18px rgb(19 41 75 / 0.35);
+  box-shadow:
+    0 1px 0 var(--rule),
+    0 12px 32px -18px rgb(19 41 75 / 0.35);
 }
 
 .sheet.is-draft {
   border-top-color: var(--draft);
-  background-image: repeating-linear-gradient(-45deg, transparent 0 22px, rgb(138 93 0 / 0.035) 22px 44px);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0 22px,
+    rgb(138 93 0 / 0.035) 22px 44px
+  );
 }
 
 .sheet-head {

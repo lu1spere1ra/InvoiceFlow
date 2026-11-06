@@ -32,11 +32,17 @@ export class InvoiceEditor {
   /** Route parameter; absent when creating a new draft. */
   readonly id = input<string>();
 
-  protected readonly customers = httpResource<PagedResult<Customer>>(() => '/api/customers?pageSize=100');
+  protected readonly customers = httpResource<PagedResult<Customer>>(
+    () => '/api/customers?pageSize=100',
+  );
   protected readonly products = httpResource<Product[]>(() => '/api/products');
   protected readonly taxRates = httpResource<TaxRate[]>(() => '/api/tax-rates');
-  protected readonly exemptionReasons = httpResource<ExemptionReason[]>(() => '/api/tax-rates/exemption-reasons');
-  protected readonly existing = httpResource<Invoice>(() => (this.id() ? `/api/invoices/${this.id()}` : undefined));
+  protected readonly exemptionReasons = httpResource<ExemptionReason[]>(
+    () => '/api/tax-rates/exemption-reasons',
+  );
+  protected readonly existing = httpResource<Invoice>(() =>
+    this.id() ? `/api/invoices/${this.id()}` : undefined,
+  );
 
   protected readonly saving = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -47,7 +53,9 @@ export class InvoiceEditor {
     lines: this.fb.array([this.newLine()]),
   });
 
-  private readonly formValue = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
+  private readonly formValue = toSignal(this.form.valueChanges, {
+    initialValue: this.form.getRawValue(),
+  });
 
   protected readonly totals = computed(() => {
     const rates = new Map((this.taxRates.value() ?? []).map((r) => [r.id, r.percentage]));
@@ -71,7 +79,9 @@ export class InvoiceEditor {
       const rates = this.taxRates.value() ?? [];
       this.form.controls.lines.clear();
       for (const line of invoice.lines) {
-        const rate = rates.find((r) => r.code === line.taxCode && r.percentage === line.taxPercentage);
+        const rate = rates.find(
+          (r) => r.code === line.taxCode && r.percentage === line.taxPercentage,
+        );
         this.form.controls.lines.push(
           this.newLine({
             productId: line.productId,
@@ -84,7 +94,10 @@ export class InvoiceEditor {
           }),
         );
       }
-      this.form.patchValue({ customerId: invoice.customerId, paymentTermDays: invoice.paymentTermDays });
+      this.form.patchValue({
+        customerId: invoice.customerId,
+        paymentTermDays: invoice.paymentTermDays,
+      });
     });
   }
 
@@ -122,7 +135,9 @@ export class InvoiceEditor {
   protected save(issueAfterSaving: boolean): void {
     if (this.form.invalid || this.lines.length === 0) {
       this.form.markAllAsTouched();
-      this.error.set(this.lines.length === 0 ? 'Add at least one line.' : 'Check the highlighted fields.');
+      this.error.set(
+        this.lines.length === 0 ? 'Add at least one line.' : 'Check the highlighted fields.',
+      );
       return;
     }
 
@@ -139,13 +154,25 @@ export class InvoiceEditor {
 
     const id = this.id();
     const request: Observable<Invoice> = id
-      ? this.api.updateDraft(id, { customerId: value.customerId, paymentTermDays: value.paymentTermDays, lines })
-      : this.api.createDraft({ type: 'Invoice', customerId: value.customerId, paymentTermDays: value.paymentTermDays, lines });
+      ? this.api.updateDraft(id, {
+          customerId: value.customerId,
+          paymentTermDays: value.paymentTermDays,
+          lines,
+        })
+      : this.api.createDraft({
+          type: 'Invoice',
+          customerId: value.customerId,
+          paymentTermDays: value.paymentTermDays,
+          lines,
+        });
 
     this.saving.set(true);
     this.error.set(null);
     request.subscribe({
-      next: (invoice) => (issueAfterSaving ? this.issue(invoice.id) : this.router.navigate(['/documents', invoice.id])),
+      next: (invoice) =>
+        issueAfterSaving
+          ? this.issue(invoice.id)
+          : this.router.navigate(['/documents', invoice.id]),
       error: (e: unknown) => this.fail(e),
     });
   }
@@ -168,15 +195,17 @@ export class InvoiceEditor {
     this.saving.set(false);
   }
 
-  private newLine(value?: Partial<{
-    productId: string;
-    description: string;
-    quantity: number;
-    unitPrice: number;
-    discountPercent: number;
-    taxRateId: string;
-    exemptionCode: string;
-  }>) {
+  private newLine(
+    value?: Partial<{
+      productId: string;
+      description: string;
+      quantity: number;
+      unitPrice: number;
+      discountPercent: number;
+      taxRateId: string;
+      exemptionCode: string;
+    }>,
+  ) {
     return this.fb.group({
       productId: [value?.productId ?? '', Validators.required],
       description: [value?.description ?? '', Validators.maxLength(200)],

@@ -1,8 +1,9 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { Auth } from '../../core/auth';
 import { queryParams } from '../../core/api';
 import {
   DocumentType,
@@ -19,7 +20,9 @@ import { StatusBadge } from '../../shared/status-badge';
   template: `
     <header class="page-header">
       <h1>Documents</h1>
-      <a class="btn btn-primary" routerLink="/documents/new">New document</a>
+      @if (auth.canWrite()) {
+        <a class="btn btn-primary" routerLink="/documents/new">New document</a>
+      }
     </header>
 
     <div class="toolbar" role="search">
@@ -30,13 +33,21 @@ import { StatusBadge } from '../../shared/status-badge';
         [ngModel]="search()"
         (ngModelChange)="search.set($event); page.set(1)"
       />
-      <select aria-label="Status" [ngModel]="status()" (ngModelChange)="status.set($event); page.set(1)">
+      <select
+        aria-label="Status"
+        [ngModel]="status()"
+        (ngModelChange)="status.set($event); page.set(1)"
+      >
         <option value="">All statuses</option>
         @for (s of statuses; track s) {
           <option [value]="s">{{ s }}</option>
         }
       </select>
-      <select aria-label="Document type" [ngModel]="type()" (ngModelChange)="type.set($event); page.set(1)">
+      <select
+        aria-label="Document type"
+        [ngModel]="type()"
+        (ngModelChange)="type.set($event); page.set(1)"
+      >
         <option value="">All types</option>
         @for (t of types; track t) {
           <option [value]="t">{{ typeLabels[t] }}</option>
@@ -64,7 +75,9 @@ import { StatusBadge } from '../../shared/status-badge';
           @for (doc of documents.value()?.items; track doc.id) {
             <tr>
               <td>
-                <a class="nowrap" [routerLink]="['/documents', doc.id]">{{ doc.documentNumber ?? 'Draft' }}</a>
+                <a class="nowrap" [routerLink]="['/documents', doc.id]">{{
+                  doc.documentNumber ?? 'Draft'
+                }}</a>
               </td>
               <td>
                 {{ doc.customerName }}
@@ -93,9 +106,13 @@ import { StatusBadge } from '../../shared/status-badge';
 
     @if (totalPages() > 1) {
       <nav class="pager" aria-label="Pages">
-        <button class="btn" [disabled]="page() === 1" (click)="page.set(page() - 1)">Previous</button>
+        <button class="btn" [disabled]="page() === 1" (click)="page.set(page() - 1)">
+          Previous
+        </button>
         <span class="muted">Page {{ page() }} of {{ totalPages() }}</span>
-        <button class="btn" [disabled]="page() >= totalPages()" (click)="page.set(page() + 1)">Next</button>
+        <button class="btn" [disabled]="page() >= totalPages()" (click)="page.set(page() + 1)">
+          Next
+        </button>
       </nav>
     }
   `,
@@ -113,6 +130,7 @@ import { StatusBadge } from '../../shared/status-badge';
   `,
 })
 export class InvoiceList {
+  protected readonly auth = inject(Auth);
   protected readonly statuses: InvoiceStatus[] = ['Draft', 'Issued', 'Paid', 'Voided'];
   protected readonly types: DocumentType[] = ['Invoice', 'InvoiceReceipt', 'CreditNote'];
   protected readonly typeLabels = documentTypeLabels;

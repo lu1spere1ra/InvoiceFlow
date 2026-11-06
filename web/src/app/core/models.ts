@@ -90,7 +90,14 @@ export interface Invoice {
   documentNumber: string | null;
   atcud: string | null;
   customerId: string;
-  customer: { name: string; nif: string; street: string; postalCode: string; city: string; country: string };
+  customer: {
+    name: string;
+    nif: string;
+    street: string;
+    postalCode: string;
+    city: string;
+    country: string;
+  };
   paymentTermDays: number;
   issueDate: string | null;
   dueDate: string | null;

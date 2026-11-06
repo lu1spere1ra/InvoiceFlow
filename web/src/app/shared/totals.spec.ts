@@ -11,7 +11,9 @@ describe('roundMoney', () => {
 
 describe('previewTotals', () => {
   it('matches the backend example with discount', () => {
-    const totals = previewTotals([{ quantity: 3, unitPrice: 19.99, discountPercent: 10, taxPercentage: 23 }]);
+    const totals = previewTotals([
+      { quantity: 3, unitPrice: 19.99, discountPercent: 10, taxPercentage: 23 },
+    ]);
 
     expect(totals.netTotal).toBe(53.97);
     expect(totals.taxTotal).toBe(12.41);

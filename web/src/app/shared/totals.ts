@@ -29,7 +29,9 @@ export function previewTotals(lines: LineForTotals[]) {
     byRate.set(rate, (byRate.get(rate) ?? 0) + net);
   }
 
-  const taxes: Pick<TaxSummary, 'percentage' | 'taxableAmount' | 'taxAmount'>[] = [...byRate.entries()]
+  const taxes: Pick<TaxSummary, 'percentage' | 'taxableAmount' | 'taxAmount'>[] = [
+    ...byRate.entries(),
+  ]
     .sort(([a], [b]) => b - a)
     .map(([percentage, taxable]) => ({
       percentage,
@@ -39,5 +41,11 @@ export function previewTotals(lines: LineForTotals[]) {
 
   const netTotal = roundMoney(nets.reduce((sum, l) => sum + l.net, 0));
   const taxTotal = roundMoney(taxes.reduce((sum, t) => sum + t.taxAmount, 0));
-  return { lineNets: nets.map((l) => l.net), taxes, netTotal, taxTotal, grossTotal: roundMoney(netTotal + taxTotal) };
+  return {
+    lineNets: nets.map((l) => l.net),
+    taxes,
+    netTotal,
+    taxTotal,
+    grossTotal: roundMoney(netTotal + taxTotal),
+  };
 }

@@ -1,7 +1,8 @@
 import { httpResource } from '@angular/common/http';
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { Auth } from '../../core/auth';
 import { queryParams } from '../../core/api';
 import { Customer, PagedResult } from '../../core/models';
 
@@ -11,7 +12,9 @@ import { Customer, PagedResult } from '../../core/models';
   template: `
     <header class="page-header">
       <h1>Customers</h1>
-      <a class="btn btn-primary" routerLink="/customers/new">New customer</a>
+      @if (auth.canWrite()) {
+        <a class="btn btn-primary" routerLink="/customers/new">New customer</a>
+      }
     </header>
 
     <div class="toolbar" role="search">
@@ -60,6 +63,7 @@ import { Customer, PagedResult } from '../../core/models';
   `,
 })
 export class CustomerList {
+  protected readonly auth = inject(Auth);
   protected readonly search = signal('');
 
   protected readonly customers = httpResource<PagedResult<Customer>>(() => ({

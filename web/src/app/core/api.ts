@@ -35,7 +35,9 @@ export class Api {
 }
 
 /** Builds query params, skipping empty values. */
-export function queryParams(values: Record<string, string | number | null | undefined>): HttpParams {
+export function queryParams(
+  values: Record<string, string | number | null | undefined>,
+): HttpParams {
   let params = new HttpParams();
   for (const [key, value] of Object.entries(values)) {
     if (value !== null && value !== undefined && value !== '') {

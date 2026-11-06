@@ -5,8 +5,10 @@
       <h1>{{ doc.documentNumber ?? 'Draft ' + typeLabels[doc.type].toLowerCase() }}</h1>
     </div>
     <div class="actions">
-      @if (doc.status === 'Draft') {
-        <button class="btn btn-danger" [disabled]="busy()" (click)="deleteDraft()">Delete draft</button>
+      @if (doc.status === 'Draft' && auth.canWrite()) {
+        <button class="btn btn-danger" [disabled]="busy()" (click)="deleteDraft()">
+          Delete draft
+        </button>
         <a class="btn" [routerLink]="['/documents', doc.id, 'edit']">Edit</a>
         <button class="btn btn-primary" [disabled]="busy()" (click)="issue()">Issue invoice</button>
       }
@@ -28,7 +30,9 @@
         <dt>Date</dt>
         <dd>{{ (doc.issueDate | date: 'dd/MM/yyyy') ?? '—' }}</dd>
         <dt>Due</dt>
-        <dd>{{ (doc.dueDate | date: 'dd/MM/yyyy') ?? doc.paymentTermDays + ' days after issue' }}</dd>
+        <dd>
+          {{ (doc.dueDate | date: 'dd/MM/yyyy') ?? doc.paymentTermDays + ' days after issue' }}
+        </dd>
         <dt>ATCUD</dt>
         <dd class="atcud">{{ doc.atcud ?? '—' }}</dd>
       </dl>
@@ -60,7 +64,9 @@
                 {{ line.description }}
                 <div class="muted small">{{ line.productCode }}</div>
                 @if (line.exemptionReason) {
-                  <div class="muted small">{{ line.exemptionCode }}: {{ line.exemptionReason }}</div>
+                  <div class="muted small">
+                    {{ line.exemptionCode }}: {{ line.exemptionReason }}
+                  </div>
                 }
               </td>
               <td class="num">{{ line.quantity }} {{ line.unit }}</td>
@@ -76,7 +82,9 @@
 
     <footer class="sheet-foot">
       <table class="vat">
-        <caption>VAT summary</caption>
+        <caption>
+          VAT summary
+        </caption>
         <thead>
           <tr>
             <th>Rate</th>
@@ -106,7 +114,9 @@
     </footer>
   </article>
 } @else if (invoice.error()) {
-  <p class="alert">This document could not be found. <a routerLink="/documents">Back to documents</a></p>
+  <p class="alert">
+    This document could not be found. <a routerLink="/documents">Back to documents</a>
+  </p>
 } @else {
   <p class="muted">Loading document…</p>
 }
