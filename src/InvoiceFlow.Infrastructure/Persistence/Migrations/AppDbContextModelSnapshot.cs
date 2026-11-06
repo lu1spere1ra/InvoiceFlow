@@ -140,6 +140,15 @@ namespace InvoiceFlow.Infrastructure.Persistence.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("Hash")
+                        .HasMaxLength(172)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(172)");
+
+                    b.Property<string>("HashControl")
+                        .HasMaxLength(70)
+                        .HasColumnType("nvarchar(70)");
+
                     b.Property<DateOnly?>("IssueDate")
                         .HasColumnType("date");
 
@@ -354,6 +363,11 @@ namespace InvoiceFlow.Infrastructure.Persistence.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
+
+                    b.Property<string>("LastHash")
+                        .HasMaxLength(172)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(172)");
 
                     b.Property<DateOnly?>("LastIssueDate")
                         .HasColumnType("date");

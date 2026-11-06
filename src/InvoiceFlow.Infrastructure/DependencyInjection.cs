@@ -1,12 +1,17 @@
 using InvoiceFlow.Application.Abstractions;
 using InvoiceFlow.Application.Catalog;
+using InvoiceFlow.Application.Common;
 using InvoiceFlow.Application.Customers;
 using InvoiceFlow.Application.Invoices;
+using InvoiceFlow.Application.Series;
+using InvoiceFlow.Domain.Invoices;
 using InvoiceFlow.Infrastructure.Identity;
+using InvoiceFlow.Infrastructure.Pdf;
 using InvoiceFlow.Infrastructure.Persistence;
 using InvoiceFlow.Infrastructure.Persistence.Interceptors;
 using InvoiceFlow.Infrastructure.Persistence.Queries;
 using InvoiceFlow.Infrastructure.Persistence.Repositories;
+using InvoiceFlow.Infrastructure.Signing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,6 +47,13 @@ public static class DependencyInjection
         services.AddScoped<ICustomerQueries, CustomerQueries>();
         services.AddScoped<IInvoiceQueries, InvoiceQueries>();
         services.AddScoped<ICatalogQueries, CatalogQueries>();
+        services.AddScoped<ISeriesQueries, SeriesQueries>();
+
+        services.AddSingleton(configuration.GetSection("Company").Get<CompanyProfile>() ?? new CompanyProfile());
+        services.AddOptions<SigningOptions>().Bind(configuration.GetSection(SigningOptions.SectionName));
+        services.AddSingleton<IDocumentSigner, RsaDocumentSigner>();
+        services.AddSingleton<IAtSeriesRegistry, SimulatedAtSeriesRegistry>();
+        services.AddSingleton<IInvoicePdfRenderer, QuestPdfInvoiceRenderer>();
 
         return services;
     }

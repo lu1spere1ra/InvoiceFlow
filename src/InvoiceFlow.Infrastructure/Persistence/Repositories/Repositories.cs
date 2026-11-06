@@ -51,6 +51,14 @@ internal sealed class TaxRateRepository(AppDbContext db) : ITaxRateRepository
 
 internal sealed class DocumentSeriesRepository(AppDbContext db) : IDocumentSeriesRepository
 {
+    public Task<DocumentSeries?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        db.DocumentSeries.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+
+    public Task<bool> ExistsAsync(DocumentType documentType, string code, CancellationToken cancellationToken) =>
+        db.DocumentSeries.AnyAsync(s => s.DocumentType == documentType && s.Code == code, cancellationToken);
+
+    public void Add(DocumentSeries series) => db.DocumentSeries.Add(series);
+
     public Task<DocumentSeries?> GetActiveAsync(DocumentType documentType, CancellationToken cancellationToken) =>
         db.DocumentSeries
             .Where(s => s.DocumentType == documentType && s.IsActive)
@@ -68,6 +76,9 @@ internal sealed class InvoiceRepository(AppDbContext db) : IInvoiceRepository
             .Where(i => i.OriginalInvoiceId == originalInvoiceId &&
                         (i.Status == InvoiceStatus.Issued || i.Status == InvoiceStatus.Paid))
             .SumAsync(i => i.GrossTotal, cancellationToken);
+
+    public async Task<IReadOnlyList<Invoice>> ListIssuedInSeriesAsync(Guid seriesId, CancellationToken cancellationToken) =>
+        await db.Invoices.AsNoTracking().Where(i => i.SeriesId == seriesId).OrderBy(i => i.Number).ToListAsync(cancellationToken);
 
     public void Add(Invoice invoice) => db.Invoices.Add(invoice);
 

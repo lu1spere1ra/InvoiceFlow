@@ -28,6 +28,8 @@ internal sealed class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
 
         builder.Property(i => i.DocumentNumber).HasMaxLength(60);
         builder.Property(i => i.Atcud).HasMaxLength(100);
+        builder.Property(i => i.Hash).HasMaxLength(172).IsUnicode(false); // SAF-T limit
+        builder.Property(i => i.HashControl).HasMaxLength(70);
         builder.Property(i => i.OriginalDocumentNumber).HasMaxLength(60);
         builder.HasOne<Invoice>().WithMany().HasForeignKey(i => i.OriginalInvoiceId).OnDelete(DeleteBehavior.Restrict);
         builder.HasIndex(i => i.OriginalInvoiceId).HasFilter("[OriginalInvoiceId] IS NOT NULL");

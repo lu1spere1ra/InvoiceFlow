@@ -1,5 +1,5 @@
-using System.Security.Cryptography;
 using InvoiceFlow.Application.Auth;
+using InvoiceFlow.Application.Series;
 using InvoiceFlow.Domain.Customers;
 using InvoiceFlow.Domain.Invoices;
 using InvoiceFlow.Domain.Products;
@@ -17,6 +17,7 @@ public sealed class DatabaseInitializer(
     AppDbContext db,
     UserManager<ApplicationUser> users,
     RoleManager<IdentityRole<Guid>> roles,
+    IAtSeriesRegistry seriesRegistry,
     TimeProvider timeProvider,
     ILogger<DatabaseInitializer> logger)
 {
@@ -32,7 +33,7 @@ public sealed class DatabaseInitializer(
         logger.LogInformation("Seeding reference data (demo data: {SeedDemoData})", seedDemoData);
 
         var rates = SeedTaxRates();
-        SeedSeries();
+        await SeedSeriesAsync(cancellationToken);
 
         if (seedDemoData)
         {
@@ -96,12 +97,13 @@ public sealed class DatabaseInitializer(
         return rates.ToDictionary(r => r.Code);
     }
 
-    private void SeedSeries()
+    private async Task SeedSeriesAsync(CancellationToken cancellationToken)
     {
         var code = $"{timeProvider.GetUtcNow().Year}A";
         foreach (var type in Enum.GetValues<DocumentType>())
         {
-            db.DocumentSeries.Add(DocumentSeries.Create(type, code, NewValidationCode()).Value);
+            var validationCode = await seriesRegistry.RegisterAsync(type, code, cancellationToken);
+            db.DocumentSeries.Add(DocumentSeries.Create(type, code, validationCode).Value);
         }
     }
 
@@ -144,8 +146,4 @@ public sealed class DatabaseInitializer(
             db.Customers.Add(Customer.Create(c.Name, c.Nif, new Address(c.Street, c.PostalCode, c.City), c.Email).Value);
         }
     }
-
-    /// <summary>Stands in for the code AT returns when a series is communicated (ADR 0004).</summary>
-    private static string NewValidationCode() =>
-        RandomNumberGenerator.GetString("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", 8);
 }

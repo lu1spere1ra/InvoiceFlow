@@ -490,3 +490,6 @@ web/.angular/
 *.pem
 !**/testdata/*.pem
 .env
+
+# Locally generated document-signing keys
+keys/

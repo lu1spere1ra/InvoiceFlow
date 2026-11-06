@@ -10,6 +10,7 @@ internal sealed class DocumentSeriesConfiguration : IEntityTypeConfiguration<Doc
     {
         builder.Property(s => s.Code).HasMaxLength(20);
         builder.Property(s => s.ValidationCode).HasMaxLength(20);
+        builder.Property(s => s.LastHash).HasMaxLength(172).IsUnicode(false);
         builder.HasIndex(s => new { s.DocumentType, s.Code }).IsUnique();
 
         // Optimistic concurrency token: two requests issuing from the same series at once cannot both
