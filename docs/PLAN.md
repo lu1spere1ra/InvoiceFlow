@@ -1,5 +1,8 @@
 # InvoiceFlow — Implementation Plan
 
+> Progress: phases 0–7 implemented on 2026-11-06 (see the git history). 140 backend tests (unit,
+> architecture, integration with SQL Server) and 10 frontend tests, all green in CI.
+>
 > Status: **approved** (2026-11-06), with one review note: *keep it lean — no technology beyond what is
 > needed, no over-engineering.* Section 10 lists what was cut as a result.
 
