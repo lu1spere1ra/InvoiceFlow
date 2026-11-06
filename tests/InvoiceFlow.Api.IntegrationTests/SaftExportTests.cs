@@ -26,7 +26,7 @@ public sealed class SaftExportTests(ApiFactoryFixture fixture) : IntegrationTest
         await Client.PostAsJsonAsync($"/api/invoices/{voided.Id}/void", new VoidInput("Duplicated"), Json, Ct);
         var note = await ReadAsync<InvoiceDto>(await Client.PostAsJsonAsync(
             $"/api/invoices/{invoice.Id}/credit-notes", new CreateCreditNoteInput("Hours not used", [new CreditNoteLineInput(1, 2)]), Json, Ct));
-        await Client.PostAsync($"/api/invoices/{note.Id}/issue", null, Ct); // 2 h × 65 € = 130.00 net, a debit
+        var issuedNote = await ReadAsync<InvoiceDto>(await Client.PostAsync($"/api/invoices/{note.Id}/issue", null, Ct)); // 130.00 net debit
 
         var (xml, raw) = await ExportAsync(invoice.IssueDate!.Value);
 
@@ -47,7 +47,7 @@ public sealed class SaftExportTests(ApiFactoryFixture fixture) : IntegrationTest
         var voidedEntry = sales.Elements(Ns + "Invoice").Single(i => i.Element(Ns + "InvoiceNo")!.Value == voided.DocumentNumber);
         voidedEntry.Element(Ns + "DocumentStatus")!.Element(Ns + "InvoiceStatus")!.Value.ShouldBe("A");
 
-        var noteEntry = sales.Elements(Ns + "Invoice").Single(i => i.Element(Ns + "InvoiceType")!.Value == "NC");
+        var noteEntry = entries.Single(i => i.Element(Ns + "InvoiceNo")!.Value == issuedNote.DocumentNumber);
         noteEntry.Descendants(Ns + "Reference").Single().Value.ShouldBe(invoice.DocumentNumber);
         noteEntry.Descendants(Ns + "DebitAmount").ShouldNotBeEmpty();
 

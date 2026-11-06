@@ -93,9 +93,11 @@ public sealed class DocumentLifecycleApiTests(ApiFactoryFixture fixture) : Integ
         var byTotal = await GetAsync<PagedResult<InvoiceSummaryDto>>("/api/invoices?status=Issued&sortBy=Total&descending=false&pageSize=100");
         byTotal.Items.Select(i => i.GrossTotal).ShouldBeInOrder(SortDirection.Ascending);
 
-        // Nothing issued today is overdue yet.
-        var overdue = await GetAsync<PagedResult<InvoiceSummaryDto>>("/api/invoices?overdueOnly=true");
-        overdue.Items.ShouldBeEmpty();
+        // The demo data contains unpaid invoices past their due date; nothing issued today is among them.
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var overdue = await GetAsync<PagedResult<InvoiceSummaryDto>>("/api/invoices?overdueOnly=true&pageSize=100");
+        overdue.Items.ShouldNotBeEmpty();
+        overdue.Items.ShouldAllBe(i => i.Status == InvoiceStatus.Issued && i.DueDate < today);
     }
 
     [Fact]

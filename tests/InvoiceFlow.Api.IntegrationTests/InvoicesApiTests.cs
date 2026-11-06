@@ -101,8 +101,16 @@ public sealed class InvoicesApiTests(ApiFactoryFixture fixture) : IntegrationTes
         // Losers of the race get a retryable 409; nobody gets a duplicate.
         responses.ShouldAllBe(r => r.StatusCode == HttpStatusCode.OK || r.StatusCode == HttpStatusCode.Conflict);
 
-        var issued = await GetAsync<PagedResult<InvoiceSummaryDto>>("/api/invoices?status=Issued&type=Invoice&pageSize=100");
-        var numbers = issued.Items.Select(i => int.Parse(i.DocumentNumber!.Split('/')[1], System.Globalization.CultureInfo.InvariantCulture)).Order().ToList();
+        // Every invoice of the active series, whatever its status, must be numbered 1..n.
+        var series = drafts[0].Type.ToCode();
+        var all = await GetAsync<PagedResult<InvoiceSummaryDto>>("/api/invoices?type=Invoice&pageSize=100");
+        var active = all.Items.Where(i => i.DocumentNumber is not null).Select(i => i.DocumentNumber!).Max(n => n.Split('/')[0])!;
+        var numbers = all.Items
+            .Where(i => i.DocumentNumber?.StartsWith(active + "/", StringComparison.Ordinal) == true)
+            .Select(i => int.Parse(i.DocumentNumber!.Split('/')[1], System.Globalization.CultureInfo.InvariantCulture))
+            .Order()
+            .ToList();
+        series.ShouldBe("FT");
         numbers.ShouldBe(Enumerable.Range(1, numbers.Count).ToList());
     }
 
