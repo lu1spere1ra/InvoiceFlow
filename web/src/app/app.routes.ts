@@ -11,7 +11,12 @@ export const routes: Routes = [
     path: '',
     canActivateChild: [authGuard],
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'documents' },
+      {
+        path: '',
+        pathMatch: 'full',
+        title: 'Overview · InvoiceFlow',
+        loadComponent: () => import('./features/dashboard/dashboard').then((m) => m.DashboardPage),
+      },
       {
         path: 'documents',
         title: 'Documents · InvoiceFlow',
@@ -83,5 +88,5 @@ export const routes: Routes = [
       },
     ],
   },
-  { path: '**', redirectTo: 'documents' },
+  { path: '**', redirectTo: '' },
 ];

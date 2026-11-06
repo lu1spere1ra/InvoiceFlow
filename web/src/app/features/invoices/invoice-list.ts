@@ -1,6 +1,6 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, input, linkedSignal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Auth } from '../../core/auth';
@@ -180,7 +180,9 @@ export class InvoiceList {
   protected readonly status = signal<InvoiceStatus | ''>('');
   protected readonly type = signal<DocumentType | ''>('');
   protected readonly page = signal(1);
-  protected readonly overdueOnly = signal(false);
+  /** Pre-set from the dashboard link (?overdue=1). */
+  readonly overdue = input<string>();
+  protected readonly overdueOnly = linkedSignal(() => this.overdue() === '1');
   protected readonly sort = signal<SortState>({ field: 'IssueDate', descending: true });
   private readonly today = new Date().toISOString().slice(0, 10);
 

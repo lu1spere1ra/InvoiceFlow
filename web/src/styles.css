@@ -14,6 +14,8 @@
   --paid: #1f7a55;
   --draft: #8a5d00;
   --focus: #3d7cf0;
+  /* Single-series chart fill; validated for lightness, chroma and contrast on the light surface. */
+  --chart: #3b6ab3;
 
   --font: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --step--1: 0.8125rem;

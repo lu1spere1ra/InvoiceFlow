@@ -18,6 +18,9 @@ import { Auth } from './core/auth';
             </svg>
             InvoiceFlow
           </a>
+          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+            >Overview</a
+          >
           <a routerLink="/documents" routerLinkActive="active">Documents</a>
           <a routerLink="/customers" routerLinkActive="active">Customers</a>
           <a routerLink="/products" routerLinkActive="active">Products</a>

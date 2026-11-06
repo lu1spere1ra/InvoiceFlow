@@ -160,7 +160,7 @@ export class Login {
     this.error.set(null);
     const { email, password } = this.form.getRawValue();
     this.auth.login(email, password).subscribe({
-      next: () => this.router.navigateByUrl(this.returnUrl() || '/documents'),
+      next: () => this.router.navigateByUrl(this.returnUrl() || '/'),
       error: (e: unknown) => {
         this.error.set(problemMessage(e));
         this.busy.set(false);
