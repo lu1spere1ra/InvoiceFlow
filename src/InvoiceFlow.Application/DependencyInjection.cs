@@ -2,6 +2,7 @@ using FluentValidation;
 using InvoiceFlow.Application.Catalog;
 using InvoiceFlow.Application.Customers;
 using InvoiceFlow.Application.Invoices;
+using InvoiceFlow.Application.Saft;
 using InvoiceFlow.Application.Series;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -34,6 +35,8 @@ public static class DependencyInjection
         services.AddScoped<VoidInvoice>();
         services.AddScoped<CreateCreditNote>();
         services.AddScoped<GetInvoicePdf>();
+
+        services.AddScoped<ExportSaft>();
 
         services.AddScoped<CreateSeries>();
         services.AddScoped<CloseSeries>();

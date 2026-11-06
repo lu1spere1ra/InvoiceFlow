@@ -3,6 +3,7 @@ using InvoiceFlow.Application.Catalog;
 using InvoiceFlow.Application.Common;
 using InvoiceFlow.Application.Customers;
 using InvoiceFlow.Application.Invoices;
+using InvoiceFlow.Application.Saft;
 using InvoiceFlow.Application.Series;
 using InvoiceFlow.Domain.Invoices;
 using InvoiceFlow.Infrastructure.Identity;
@@ -11,6 +12,7 @@ using InvoiceFlow.Infrastructure.Persistence;
 using InvoiceFlow.Infrastructure.Persistence.Interceptors;
 using InvoiceFlow.Infrastructure.Persistence.Queries;
 using InvoiceFlow.Infrastructure.Persistence.Repositories;
+using InvoiceFlow.Infrastructure.Saft;
 using InvoiceFlow.Infrastructure.Signing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -54,6 +56,7 @@ public static class DependencyInjection
         services.AddSingleton<IDocumentSigner, RsaDocumentSigner>();
         services.AddSingleton<IAtSeriesRegistry, SimulatedAtSeriesRegistry>();
         services.AddSingleton<IInvoicePdfRenderer, QuestPdfInvoiceRenderer>();
+        services.AddScoped<ISaftExporter, SaftPtExporter>();
 
         return services;
     }
