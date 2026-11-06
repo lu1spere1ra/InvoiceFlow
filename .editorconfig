@@ -40,6 +40,7 @@ dotnet_naming_style.underscore_camel.capitalization = camel_case
 # Analyzer noise that does not fit this codebase
 dotnet_diagnostic.CA1062.severity = none   # nullable reference types already cover argument nulls
 dotnet_diagnostic.CA1848.severity = none   # LoggerMessage source-gen is overkill here; Serilog templates are used
+dotnet_diagnostic.CA1873.severity = none   # same reason as CA1848
 dotnet_diagnostic.CA1716.severity = none   # 'Shared'/'Error' names are fine
 dotnet_diagnostic.CA1711.severity = none
 dotnet_diagnostic.CA2007.severity = none   # no ConfigureAwait in ASP.NET Core apps
@@ -50,3 +51,7 @@ dotnet_diagnostic.IDE0005.severity = warning
 dotnet_diagnostic.CA1707.severity = none   # Method_Should_Do naming in tests
 dotnet_diagnostic.CA2234.severity = none
 dotnet_diagnostic.CA1861.severity = none
+
+# EF Core migrations are generated code
+[src/InvoiceFlow.Infrastructure/Persistence/Migrations/*.cs]
+generated_code = true

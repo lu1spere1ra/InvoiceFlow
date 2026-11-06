@@ -8,6 +8,12 @@ namespace InvoiceFlow.Domain.Invoices;
 /// </summary>
 public sealed record CustomerSnapshot(string Name, string Nif, Address Address)
 {
+    // Required by EF Core, which cannot bind the nested Address complex type through the constructor.
+    private CustomerSnapshot()
+        : this(null!, null!, null!)
+    {
+    }
+
     public static CustomerSnapshot From(Customer customer) => new(customer.Name, customer.Nif.Value, customer.Address);
 
     public bool IsFinalConsumer => Nif == Customers.Nif.FinalConsumerValue;
