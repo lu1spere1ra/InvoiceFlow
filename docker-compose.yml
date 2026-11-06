@@ -28,8 +28,12 @@ services:
       Database__InitializeOnStartup: "true"
       Database__SeedDemoData: "true"
       Jwt__SigningKey: "compose-demo-signing-key-replace-in-real-deployments"
+      Signing__KeyPath: "/app/keys/signing-key.pem"
+      Signing__GenerateIfMissing: "true" # demo: the key is created on first start and kept in a volume
     ports:
       - "5101:8080"
+    volumes:
+      - signingkeys:/app/keys
     depends_on:
       db:
         condition: service_healthy
@@ -43,3 +47,4 @@ services:
 
 volumes:
   sqldata:
+  signingkeys:

@@ -20,6 +20,8 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends fontconfig fonts-dejavu-core tzdata \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app .
+# Writable directory for the signing key (mounted as a volume by docker compose).
+RUN mkdir -p /app/keys && chown $APP_UID /app/keys
 USER $APP_UID
 ENV ASPNETCORE_HTTP_PORTS=8080
 EXPOSE 8080

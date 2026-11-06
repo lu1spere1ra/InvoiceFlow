@@ -120,4 +120,15 @@ public sealed class InvoicesController : ApiControllerBase
             ? CreatedAtAction(nameof(Get), new { id = result.Value.Id }, result.Value)
             : Problem(result.Error);
     }
+
+    /// <summary>The document as an A4 PDF with the AT QR code. Drafts are marked as not valid.</summary>
+    [HttpGet("{id:guid}/pdf")]
+    [Produces("application/pdf")]
+    [ProducesResponseType<FileContentResult>(StatusCodes.Status200OK, "application/pdf")]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, "application/problem+json")]
+    public async Task<IActionResult> Pdf(Guid id, [FromServices] GetInvoicePdf handler, CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(id, cancellationToken);
+        return result.IsSuccess ? File(result.Value.Content, "application/pdf", result.Value.FileName) : Problem(result.Error);
+    }
 }
