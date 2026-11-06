@@ -2,6 +2,7 @@ using InvoiceFlow.Application.Abstractions;
 using InvoiceFlow.Application.Catalog;
 using InvoiceFlow.Application.Customers;
 using InvoiceFlow.Application.Invoices;
+using InvoiceFlow.Infrastructure.Identity;
 using InvoiceFlow.Infrastructure.Persistence;
 using InvoiceFlow.Infrastructure.Persistence.Queries;
 using InvoiceFlow.Infrastructure.Persistence.Repositories;
@@ -23,6 +24,7 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<DatabaseInitializer>();
+        services.AddIdentityAndJwt(configuration);
 
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();

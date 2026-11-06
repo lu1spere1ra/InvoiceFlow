@@ -1,16 +1,24 @@
 using System.Security.Cryptography;
+using InvoiceFlow.Application.Auth;
 using InvoiceFlow.Domain.Customers;
 using InvoiceFlow.Domain.Invoices;
 using InvoiceFlow.Domain.Products;
 using InvoiceFlow.Domain.Series;
 using InvoiceFlow.Domain.Taxes;
+using InvoiceFlow.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace InvoiceFlow.Infrastructure.Persistence;
 
 /// <summary>Applies pending migrations and seeds reference and demo data on an empty database.</summary>
-public sealed class DatabaseInitializer(AppDbContext db, TimeProvider timeProvider, ILogger<DatabaseInitializer> logger)
+public sealed class DatabaseInitializer(
+    AppDbContext db,
+    UserManager<ApplicationUser> users,
+    RoleManager<IdentityRole<Guid>> roles,
+    TimeProvider timeProvider,
+    ILogger<DatabaseInitializer> logger)
 {
     public async Task InitializeAsync(bool seedDemoData, CancellationToken cancellationToken = default)
     {
@@ -33,6 +41,46 @@ public sealed class DatabaseInitializer(AppDbContext db, TimeProvider timeProvid
         }
 
         await db.SaveChangesAsync(cancellationToken);
+
+        await SeedRolesAsync();
+        if (seedDemoData)
+        {
+            await SeedDemoUsersAsync();
+        }
+    }
+
+    /// <summary>Demo credentials, also listed in the README. Never seeded outside demo mode.</summary>
+    public static readonly IReadOnlyList<(string Email, string Password, string FullName, string Role)> DemoUsers =
+    [
+        ("admin@invoiceflow.local", "Admin!2026", "Ana Administradora", Roles.Admin),
+        ("accountant@invoiceflow.local", "Accountant!2026", "Carlos Contabilista", Roles.Accountant),
+        ("viewer@invoiceflow.local", "Viewer!2026", "Vera Consulta", Roles.Viewer),
+    ];
+
+    private async Task SeedRolesAsync()
+    {
+        foreach (var role in Roles.All)
+        {
+            if (!await roles.RoleExistsAsync(role))
+            {
+                await roles.CreateAsync(new IdentityRole<Guid>(role));
+            }
+        }
+    }
+
+    private async Task SeedDemoUsersAsync()
+    {
+        foreach (var (email, password, fullName, role) in DemoUsers)
+        {
+            var user = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = true, FullName = fullName };
+            var created = await users.CreateAsync(user, password);
+            if (!created.Succeeded)
+            {
+                throw new InvalidOperationException($"Could not seed {email}: {string.Join(' ', created.Errors.Select(e => e.Description))}");
+            }
+
+            await users.AddToRoleAsync(user, role);
+        }
     }
 
     private Dictionary<TaxRateCode, TaxRate> SeedTaxRates()
