@@ -1,0 +1,52 @@
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+end_of_line = lf
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{json,yml,yaml,xml,csproj,props,slnx,html,scss,css,ts}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.cs]
+# Namespaces & usings
+csharp_style_namespace_declarations = file_scoped:warning
+dotnet_sort_system_directives_first = true
+csharp_using_directive_placement = outside_namespace:warning
+
+# Modern C#
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_expression_bodied_properties = true:suggestion
+csharp_style_prefer_primary_constructors = true:suggestion
+csharp_prefer_braces = when_multiline:suggestion
+dotnet_style_readonly_field = true:warning
+
+# Naming: private fields _camelCase
+dotnet_naming_rule.private_fields_underscore.severity = warning
+dotnet_naming_rule.private_fields_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_underscore.style = underscore_camel
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscore_camel.required_prefix = _
+dotnet_naming_style.underscore_camel.capitalization = camel_case
+
+# Analyzer noise that does not fit this codebase
+dotnet_diagnostic.CA1062.severity = none   # nullable reference types already cover argument nulls
+dotnet_diagnostic.CA1848.severity = none   # LoggerMessage source-gen is overkill here; Serilog templates are used
+dotnet_diagnostic.CA1716.severity = none   # 'Shared'/'Error' names are fine
+dotnet_diagnostic.CA1711.severity = none
+dotnet_diagnostic.CA2007.severity = none   # no ConfigureAwait in ASP.NET Core apps
+dotnet_diagnostic.CA1515.severity = none   # public types are fine in app projects
+dotnet_diagnostic.IDE0005.severity = warning
+
+[tests/**.cs]
+dotnet_diagnostic.CA1707.severity = none   # Method_Should_Do naming in tests
+dotnet_diagnostic.CA2234.severity = none
+dotnet_diagnostic.CA1861.severity = none
