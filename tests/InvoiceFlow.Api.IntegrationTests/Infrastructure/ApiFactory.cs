@@ -15,5 +15,6 @@ public sealed class ApiFactory(SqlServerContainerFixture sqlServer) : WebApplica
         builder.UseSetting("Database:InitializeOnStartup", "true");
         builder.UseSetting("Database:SeedDemoData", "true");
         builder.UseSetting("Serilog:MinimumLevel:Default", "Warning");
+        builder.UseSetting("Jwt:SigningKey", "integration-tests-signing-key-0123456789abcdef");
     }
 }

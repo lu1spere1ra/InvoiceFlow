@@ -15,9 +15,20 @@ public abstract class IntegrationTest : IClassFixture<ApiFactoryFixture>
         Converters = { new JsonStringEnumConverter() },
     };
 
-    protected IntegrationTest(ApiFactoryFixture fixture) => Client = fixture.Factory.CreateClient();
+    private readonly ApiFactoryFixture _fixture;
 
+    protected IntegrationTest(ApiFactoryFixture fixture)
+    {
+        _fixture = fixture;
+        Client = fixture.AdminClient;
+    }
+
+    /// <summary>Signed in as the demo admin.</summary>
     protected HttpClient Client { get; }
+
+    protected HttpClient AnonymousClient() => _fixture.Factory.CreateClient();
+
+    protected Task<HttpClient> ClientForAsync(string email, string password) => _fixture.SignedInClientAsync(email, password);
 
     protected static CancellationToken Ct => TestContext.Current.CancellationToken;
 
@@ -39,11 +50,20 @@ public sealed class ApiFactoryFixture(SqlServerContainerFixture sqlServer) : IAs
 {
     public ApiFactory Factory { get; } = new(sqlServer);
 
-    public ValueTask InitializeAsync()
-    {
+    public HttpClient AdminClient { get; private set; } = null!;
+
+    public async ValueTask InitializeAsync() =>
         // Creating the server runs migrations and seeding once for the class.
-        _ = Factory.Server;
-        return ValueTask.CompletedTask;
+        AdminClient = await SignedInClientAsync("admin@invoiceflow.local", "Admin!2026");
+
+    public async Task<HttpClient> SignedInClientAsync(string email, string password)
+    {
+        var client = Factory.CreateClient();
+        var response = await client.PostAsJsonAsync("/api/auth/login", new { email, password });
+        response.EnsureSuccessStatusCode();
+        var session = await response.Content.ReadFromJsonAsync<JsonElement>();
+        client.DefaultRequestHeaders.Authorization = new("Bearer", session.GetProperty("accessToken").GetString());
+        return client;
     }
 
     public ValueTask DisposeAsync() => Factory.DisposeAsync();
