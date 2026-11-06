@@ -49,9 +49,10 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
+// Request logging wraps the exception handler, so it records the final status (e.g. 409), not the exception.
+app.UseSerilogRequestLogging();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
-app.UseSerilogRequestLogging();
 app.UseAuthentication();
 app.UseAuthorization();
 
