@@ -107,6 +107,19 @@ export interface Invoice {
   netTotal: number;
   taxTotal: number;
   grossTotal: number;
+  paidOn: string | null;
+  voidReason: string | null;
+  originalInvoiceId: string | null;
+  originalDocumentNumber: string | null;
+  creditReason: string | null;
+  creditedAmount: number;
+}
+
+export type ProductInput = Omit<Product, 'id'>;
+
+export interface CreditNoteInput {
+  reason: string;
+  lines: { lineNumber: number; quantity: number }[];
 }
 
 export interface InvoiceLineInput {

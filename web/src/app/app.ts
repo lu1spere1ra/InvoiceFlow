@@ -20,6 +20,7 @@ import { Auth } from './core/auth';
           </a>
           <a routerLink="/documents" routerLinkActive="active">Documents</a>
           <a routerLink="/customers" routerLinkActive="active">Customers</a>
+          <a routerLink="/products" routerLinkActive="active">Products</a>
           <div class="user">
             <span class="user-name">{{ auth.user()?.fullName }}</span>
             <span class="user-role">{{ auth.user()?.roles?.join(', ') }}</span>

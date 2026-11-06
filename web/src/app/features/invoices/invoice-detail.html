@@ -10,13 +10,59 @@
           Delete draft
         </button>
         <a class="btn" [routerLink]="['/documents', doc.id, 'edit']">Edit</a>
-        <button class="btn btn-primary" [disabled]="busy()" (click)="issue()">Issue invoice</button>
+        <button class="btn btn-primary" [disabled]="busy()" (click)="issue()">
+          Issue {{ doc.type === 'CreditNote' ? 'credit note' : 'document' }}
+        </button>
+      }
+      @if ((doc.status === 'Issued' || doc.status === 'Paid') && auth.canWrite()) {
+        <button class="btn btn-danger" [disabled]="busy()" (click)="pending.set('void')">
+          Void
+        </button>
+        @if (doc.type !== 'CreditNote' && doc.creditedAmount < doc.grossTotal) {
+          <a class="btn" [routerLink]="['/documents', doc.id, 'credit-note']">Create credit note</a>
+        }
+        @if (doc.status === 'Issued' && doc.type === 'Invoice') {
+          <button class="btn btn-primary" [disabled]="busy()" (click)="pending.set('pay')">
+            Record payment
+          </button>
+        }
       }
     </div>
   </header>
 
   @if (error()) {
     <p class="alert" role="alert">{{ error() }}</p>
+  }
+
+  @if (pending() === 'pay') {
+    <form class="panel" (ngSubmit)="confirmPayment()">
+      <div class="field">
+        <label for="paidOn">Payment date</label>
+        <input id="paidOn" name="paidOn" type="date" [max]="today" [(ngModel)]="paidOn" required />
+      </div>
+      <button class="btn btn-primary" type="submit" [disabled]="busy()">Record payment</button>
+      <button class="btn" type="button" (click)="pending.set(null)">Cancel</button>
+    </form>
+  }
+
+  @if (pending() === 'void') {
+    <form class="panel" (ngSubmit)="confirmVoid()">
+      <div class="field grow">
+        <label for="voidReason">Why is this document being voided?</label>
+        <input
+          id="voidReason"
+          name="voidReason"
+          maxlength="200"
+          [(ngModel)]="voidReason"
+          required
+        />
+        <span class="muted small"
+          >The number is kept and the document stays in the SAF-T file as cancelled.</span
+        >
+      </div>
+      <button class="btn btn-danger" type="submit" [disabled]="busy()">Void document</button>
+      <button class="btn" type="button" (click)="pending.set(null)">Cancel</button>
+    </form>
   }
 
   <article class="sheet" [class.is-draft]="doc.status === 'Draft'">
@@ -35,8 +81,30 @@
         </dd>
         <dt>ATCUD</dt>
         <dd class="atcud">{{ doc.atcud ?? '—' }}</dd>
+        @if (doc.paidOn) {
+          <dt>Paid</dt>
+          <dd>{{ doc.paidOn | date: 'dd/MM/yyyy' }}</dd>
+        }
       </dl>
     </header>
+
+    @if (doc.voidReason) {
+      <p class="stamp" role="note">Voided: {{ doc.voidReason }}</p>
+    }
+
+    @if (doc.originalInvoiceId) {
+      <p class="reference">
+        Credits
+        <a [routerLink]="['/documents', doc.originalInvoiceId]">{{ doc.originalDocumentNumber }}</a
+        >. Reason: {{ doc.creditReason }}
+      </p>
+    }
+
+    @if (doc.creditedAmount > 0) {
+      <p class="reference">
+        {{ doc.creditedAmount | currency }} of this document has been credited.
+      </p>
+    }
 
     <section class="party">
       <p class="muted">Billed to</p>

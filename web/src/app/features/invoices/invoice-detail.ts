@@ -1,6 +1,7 @@
 import { CurrencyPipe, DatePipe, PercentPipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import { Component, inject, input, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Api } from '../../core/api';
@@ -11,7 +12,7 @@ import { StatusBadge } from '../../shared/status-badge';
 
 @Component({
   selector: 'app-invoice-detail',
-  imports: [RouterLink, CurrencyPipe, DatePipe, PercentPipe, StatusBadge],
+  imports: [RouterLink, FormsModule, CurrencyPipe, DatePipe, PercentPipe, StatusBadge],
   templateUrl: './invoice-detail.html',
   styleUrl: './invoice-detail.css',
 })
@@ -29,6 +30,29 @@ export class InvoiceDetail {
 
   protected issue(): void {
     this.run(this.api.issue(this.id()), () => this.invoice.reload());
+  }
+
+  /** Which inline confirmation panel is open. */
+  protected readonly pending = signal<'pay' | 'void' | null>(null);
+  protected readonly today = new Date().toISOString().slice(0, 10);
+  protected paidOn = this.today;
+  protected voidReason = '';
+
+  protected confirmPayment(): void {
+    this.run(this.api.markPaid(this.id(), this.paidOn), () => this.done());
+  }
+
+  protected confirmVoid(): void {
+    if (!this.voidReason.trim()) {
+      this.error.set('State why the document is being voided.');
+      return;
+    }
+    this.run(this.api.void(this.id(), this.voidReason.trim()), () => this.done());
+  }
+
+  private done(): void {
+    this.pending.set(null);
+    this.invoice.reload();
   }
 
   protected deleteDraft(): void {

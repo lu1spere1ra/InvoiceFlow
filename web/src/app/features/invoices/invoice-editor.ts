@@ -8,6 +8,7 @@ import { Observable } from 'rxjs';
 import { Api } from '../../core/api';
 import {
   Customer,
+  DocumentType,
   ExemptionReason,
   Invoice,
   InvoiceLineInput,
@@ -48,6 +49,7 @@ export class InvoiceEditor {
   protected readonly error = signal<string | null>(null);
 
   protected readonly form = this.fb.group({
+    type: ['Invoice' as DocumentType, Validators.required],
     customerId: ['', Validators.required],
     paymentTermDays: [30, [Validators.required, Validators.min(0), Validators.max(365)]],
     lines: this.fb.array([this.newLine()]),
@@ -95,9 +97,11 @@ export class InvoiceEditor {
         );
       }
       this.form.patchValue({
+        type: invoice.type,
         customerId: invoice.customerId,
         paymentTermDays: invoice.paymentTermDays,
       });
+      this.form.controls.type.disable(); // the type of an existing draft is fixed
     });
   }
 
@@ -160,7 +164,7 @@ export class InvoiceEditor {
           lines,
         })
       : this.api.createDraft({
-          type: 'Invoice',
+          type: value.type,
           customerId: value.customerId,
           paymentTermDays: value.paymentTermDays,
           lines,

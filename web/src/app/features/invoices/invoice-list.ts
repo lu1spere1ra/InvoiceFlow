@@ -12,11 +12,12 @@ import {
   PagedResult,
   documentTypeLabels,
 } from '../../core/models';
+import { SortHeader, SortState } from '../../shared/sort-header';
 import { StatusBadge } from '../../shared/status-badge';
 
 @Component({
   selector: 'app-invoice-list',
-  imports: [RouterLink, FormsModule, CurrencyPipe, DatePipe, StatusBadge],
+  imports: [RouterLink, FormsModule, CurrencyPipe, DatePipe, StatusBadge, SortHeader],
   template: `
     <header class="page-header">
       <h1>Documents</h1>
@@ -63,12 +64,28 @@ import { StatusBadge } from '../../shared/status-badge';
       <table class="table">
         <thead>
           <tr>
-            <th>Number</th>
-            <th>Customer</th>
-            <th>Date</th>
-            <th>Due</th>
+            <th>
+              <app-sort-header
+                label="Number"
+                field="Number"
+                [sort]="sort"
+                [firstDescending]="true"
+              />
+            </th>
+            <th><app-sort-header label="Customer" field="Customer" [sort]="sort" /></th>
+            <th>
+              <app-sort-header
+                label="Date"
+                field="IssueDate"
+                [sort]="sort"
+                [firstDescending]="true"
+              />
+            </th>
+            <th><app-sort-header label="Due" field="DueDate" [sort]="sort" /></th>
             <th>Status</th>
-            <th class="num">Total</th>
+            <th class="num">
+              <app-sort-header label="Total" field="Total" [sort]="sort" [firstDescending]="true" />
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -84,7 +101,12 @@ import { StatusBadge } from '../../shared/status-badge';
                 <div class="muted small">{{ doc.customerNif }}</div>
               </td>
               <td>{{ doc.issueDate | date: 'dd/MM/yyyy' }}</td>
-              <td>{{ doc.dueDate | date: 'dd/MM/yyyy' }}</td>
+              <td [class.overdue]="isOverdue(doc)">
+                {{ doc.dueDate | date: 'dd/MM/yyyy' }}
+                @if (isOverdue(doc)) {
+                  <span class="overdue-label">Overdue</span>
+                }
+              </td>
               <td><app-status-badge [status]="doc.status" /></td>
               <td class="num">{{ doc.grossTotal | currency }}</td>
             </tr>
@@ -117,6 +139,25 @@ import { StatusBadge } from '../../shared/status-badge';
     }
   `,
   styles: `
+    .check {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--muted);
+    }
+    .check input {
+      width: auto;
+      min-width: 0;
+      flex: none;
+    }
+    .overdue {
+      color: var(--stamp);
+      font-weight: 500;
+    }
+    .overdue-label {
+      display: block;
+      font-size: var(--step--1);
+    }
     .small {
       font-size: var(--step--1);
     }
@@ -139,6 +180,15 @@ export class InvoiceList {
   protected readonly status = signal<InvoiceStatus | ''>('');
   protected readonly type = signal<DocumentType | ''>('');
   protected readonly page = signal(1);
+  protected readonly overdueOnly = signal(false);
+  protected readonly sort = signal<SortState>({ field: 'IssueDate', descending: true });
+  private readonly today = new Date().toISOString().slice(0, 10);
+
+  protected isOverdue(doc: InvoiceSummary): boolean {
+    return (
+      doc.status === 'Issued' && doc.type === 'Invoice' && !!doc.dueDate && doc.dueDate < this.today
+    );
+  }
 
   protected readonly documents = httpResource<PagedResult<InvoiceSummary>>(() => ({
     url: '/api/invoices',
@@ -146,6 +196,9 @@ export class InvoiceList {
       search: this.search(),
       status: this.status(),
       type: this.type(),
+      overdueOnly: this.overdueOnly() ? 'true' : null,
+      sortBy: this.sort().field,
+      descending: String(this.sort().descending),
       page: this.page(),
       pageSize: 20,
     }),

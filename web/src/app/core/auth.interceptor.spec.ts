@@ -36,7 +36,9 @@ describe('authInterceptor', () => {
 
     http.get('/api/invoices').subscribe();
 
-    expect(backend.expectOne('/api/invoices').request.headers.get('Authorization')).toBe('Bearer token-1');
+    expect(backend.expectOne('/api/invoices').request.headers.get('Authorization')).toBe(
+      'Bearer token-1',
+    );
   });
 
   it('refreshes once on 401 and retries with the new token', () => {

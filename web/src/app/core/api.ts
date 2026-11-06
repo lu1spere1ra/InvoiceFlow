@@ -3,9 +3,12 @@ import { Injectable, inject } from '@angular/core';
 import {
   CreateInvoiceDraftInput,
   Customer,
+  CreditNoteInput,
   CustomerInput,
   Invoice,
   InvoiceDraftInput,
+  Product,
+  ProductInput,
 } from './models';
 
 /** Write operations. Reads use httpResource directly in components. */
@@ -15,6 +18,26 @@ export class Api {
 
   createCustomer(input: CustomerInput) {
     return this.http.post<Customer>('/api/customers', input);
+  }
+
+  updateCustomer(id: string, input: CustomerInput) {
+    return this.http.put<Customer>(`/api/customers/${id}`, input);
+  }
+
+  deleteCustomer(id: string) {
+    return this.http.delete<void>(`/api/customers/${id}`);
+  }
+
+  createProduct(input: ProductInput) {
+    return this.http.post<Product>('/api/products', input);
+  }
+
+  updateProduct(id: string, input: ProductInput) {
+    return this.http.put<Product>(`/api/products/${id}`, input);
+  }
+
+  deleteProduct(id: string) {
+    return this.http.delete<void>(`/api/products/${id}`);
   }
 
   createDraft(input: CreateInvoiceDraftInput) {
@@ -31,6 +54,18 @@ export class Api {
 
   issue(id: string) {
     return this.http.post<Invoice>(`/api/invoices/${id}/issue`, null);
+  }
+
+  markPaid(id: string, paidOn: string | null) {
+    return this.http.post<Invoice>(`/api/invoices/${id}/pay`, { paidOn });
+  }
+
+  void(id: string, reason: string) {
+    return this.http.post<Invoice>(`/api/invoices/${id}/void`, { reason });
+  }
+
+  createCreditNote(id: string, input: CreditNoteInput) {
+    return this.http.post<Invoice>(`/api/invoices/${id}/credit-notes`, input);
   }
 }
 

@@ -44,9 +44,28 @@ export const routes: Routes = [
           import('./features/customers/customer-list').then((m) => m.CustomerList),
       },
       {
+        path: 'documents/:id/credit-note',
+        canActivate: [writerGuard],
+        title: 'New credit note · InvoiceFlow',
+        loadComponent: () =>
+          import('./features/invoices/credit-note-form').then((m) => m.CreditNoteForm),
+      },
+      {
+        path: 'products',
+        title: 'Products · InvoiceFlow',
+        loadComponent: () => import('./features/products/product-list').then((m) => m.ProductList),
+      },
+      {
         path: 'customers/new',
         canActivate: [writerGuard],
         title: 'New customer · InvoiceFlow',
+        loadComponent: () =>
+          import('./features/customers/customer-form').then((m) => m.CustomerForm),
+      },
+      {
+        path: 'customers/:id',
+        canActivate: [writerGuard],
+        title: 'Edit customer · InvoiceFlow',
         loadComponent: () =>
           import('./features/customers/customer-form').then((m) => m.CustomerForm),
       },

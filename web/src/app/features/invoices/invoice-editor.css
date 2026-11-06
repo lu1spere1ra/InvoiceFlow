@@ -1,6 +1,6 @@
 .head {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 12rem);
+  grid-template-columns: minmax(0, 14rem) minmax(0, 2fr) minmax(0, 12rem);
   gap: 1.25rem;
   margin-bottom: 1.75rem;
 }

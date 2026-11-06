@@ -1,7 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import { Component, effect, inject, input, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Api } from '../../core/api';
+import { Customer } from '../../core/models';
 import { problemMessage } from '../../core/problem';
 
 @Component({
@@ -9,7 +11,12 @@ import { problemMessage } from '../../core/problem';
   imports: [ReactiveFormsModule, RouterLink],
   template: `
     <header class="page-header">
-      <h1>New customer</h1>
+      <h1>{{ id() ? 'Edit customer' : 'New customer' }}</h1>
+      @if (id()) {
+        <button class="btn btn-danger" type="button" [disabled]="saving()" (click)="remove()">
+          Delete customer
+        </button>
+      }
     </header>
 
     @if (error()) {
@@ -76,6 +83,12 @@ export class CustomerForm {
   private readonly api = inject(Api);
   private readonly router = inject(Router);
 
+  /** Route parameter; absent when creating. */
+  readonly id = input<string>();
+  private readonly existing = httpResource<Customer>(() =>
+    this.id() ? `/api/customers/${this.id()}` : undefined,
+  );
+
   protected readonly saving = signal(false);
   protected readonly error = signal<string | null>(null);
 
@@ -88,6 +101,28 @@ export class CustomerForm {
     city: ['', Validators.required],
   });
 
+  constructor() {
+    effect(() => {
+      const customer = this.existing.value();
+      if (customer) {
+        this.form.patchValue({ ...customer, email: customer.email ?? '' });
+      }
+    });
+  }
+
+  protected remove(): void {
+    const id = this.id();
+    if (
+      id &&
+      confirm('Delete this customer? Issued documents keep their copy of the customer data.')
+    ) {
+      this.api.deleteCustomer(id).subscribe({
+        next: () => this.router.navigate(['/customers']),
+        error: (e: unknown) => this.error.set(problemMessage(e)),
+      });
+    }
+  }
+
   protected save(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -97,7 +132,9 @@ export class CustomerForm {
     this.saving.set(true);
     this.error.set(null);
     const value = this.form.getRawValue();
-    this.api.createCustomer({ ...value, email: value.email || null, country: 'PT' }).subscribe({
+    const input = { ...value, email: value.email || null, country: 'PT' };
+    const id = this.id();
+    (id ? this.api.updateCustomer(id, input) : this.api.createCustomer(input)).subscribe({
       next: () => this.router.navigate(['/customers']),
       error: (e: unknown) => {
         this.error.set(problemMessage(e));
