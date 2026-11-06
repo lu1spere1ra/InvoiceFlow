@@ -1,6 +1,7 @@
 # InvoiceFlow — Implementation Plan
 
-> Status: **draft, awaiting approval**. No production code is written until this plan is approved.
+> Status: **approved** (2026-11-06), with one review note: *keep it lean — no technology beyond what is
+> needed, no over-engineering.* Section 10 lists what was cut as a result.
 
 InvoiceFlow is a small invoicing ERP for Portuguese SMEs, built as a portfolio project. The goal is
 code that a tech lead can read top to bottom and find deliberate, defensible decisions: a rich domain
@@ -39,7 +40,7 @@ InvoiceFlow/
 ├── tests/
 │   ├── InvoiceFlow.Domain.UnitTests/
 │   ├── InvoiceFlow.Application.UnitTests/
-│   ├── InvoiceFlow.Architecture.Tests/   # Layer-dependency rules (NetArchTest, MIT)
+│   ├── InvoiceFlow.Architecture.Tests/   # Layer-dependency rules (plain reflection, no library)
 │   └── InvoiceFlow.Api.IntegrationTests/ # WebApplicationFactory + Testcontainers (SQL Server)
 ├── web/                              # Angular app (standalone components, signals)
 ├── docs/
@@ -64,13 +65,12 @@ Dependency rule (enforced by architecture tests): `Api → Infrastructure → Ap
 | Persistence | EF Core 10 + SQL Server 2022 (Docker) | MIT |
 | Auth | ASP.NET Core Identity + JWT bearer | MIT |
 | Validation | FluentValidation | Apache-2.0 |
-| Logging | Serilog (console JSON + optional Seq) | Apache-2.0 |
+| Logging | Serilog (structured console output) | Apache-2.0 |
 | API docs | `Microsoft.AspNetCore.OpenApi` + Scalar | MIT |
 | PDF | QuestPDF (Community licence) | free under USD 1M revenue |
 | QR code | QRCoder | MIT |
-| DI scanning/decorators | Scrutor | MIT |
-| Tests | xUnit, Shouldly, NSubstitute, Testcontainers.MsSql, NetArchTest | MIT/BSD/Apache |
-| Frontend | Angular 22 (current stable), Angular Material, ng2-charts/Chart.js | MIT |
+| Tests | xUnit, Shouldly, NSubstitute, Testcontainers.MsSql | MIT/BSD/Apache |
+| Frontend | Angular 22 (current stable), plain CSS, hand-rolled SVG charts | MIT |
 
 ---
 
@@ -126,12 +126,12 @@ same series. The first document of a series uses an empty previous hash. Printed
 | # | ADR | Core decision |
 |---|---|---|
 | 0001 | Clean Architecture with a rich domain | 4 projects, dependency rule, invariants in entities |
-| 0002 | Hand-written handlers instead of MediatR | `ICommandHandler<TCommand,TResult>` / `IQueryHandler<,>`, Scrutor decorators for validation & logging; licence + explicitness |
+| 0002 | Use-case classes instead of MediatR | One small class per use case, injected straight into controllers; validation runs in an MVC filter; licence + explicitness |
 | 0003 | Document numbering strategy | Number assigned only at issue time (drafts have none → no gaps); allocation inside a transaction with optimistic concurrency (`rowversion`) on the series and retry |
 | 0004 | Hash chain and ATCUD | Simplified AT model, RSA signing behind a port, what is *not* compliant |
 | 0005 | Error handling: Result pattern + ProblemDetails | Expected failures are `Result<T>`/`Error` values mapped to RFC 9457 ProblemDetails; exceptions only for bugs |
 | 0006 | Persistence boundaries | Aggregate repositories for writes, read-model query services (projections straight to DTOs) for lists/dashboard; manual mapping; soft delete via global query filters; audit via `SaveChanges` interceptor |
-| (opt.) 0007 | Authentication: JWT + rotating refresh tokens | Short-lived access token, hashed refresh tokens with rotation and reuse detection |
+| (opt.) 0007 | Authentication: JWT + rotating refresh tokens | Short-lived access token, hashed refresh tokens, rotation, revoke-all on reuse |
 
 ---
 
@@ -156,7 +156,7 @@ its number in the UI*.
 - Domain: `Customer` (with NIF validation), `TaxRate` (seeded), `DocumentSeries`, `Invoice` (type `FT`
   only), lines, totals, `Draft → Issued` transition, numbering. Unit tests for totals/VAT, NIF,
   transitions and numbering.
-- Application: handler abstractions, `CreateCustomer`, `CreateDraftInvoice`, `IssueInvoice`,
+- Application: use-case classes `CreateCustomer`, `CreateDraftInvoice`, `IssueInvoice`,
   `GetInvoiceById`, `ListInvoices` (simple); FluentValidation; `Result<T>`.
 - Infrastructure: `AppDbContext`, configurations, first migration, seed (VAT rates, default series,
   a few customers).
@@ -171,7 +171,7 @@ its number in the UI*.
 
 ### Phase 2 — Authentication & authorization
 - ASP.NET Core Identity (Guid keys) in Infrastructure; `/auth/login`, `/auth/refresh`, `/auth/logout`.
-- JWT access token (15 min) + refresh token (7 days, stored hashed, rotation, reuse detection revokes the token family).
+- JWT access token (15 min) + refresh token (7 days, stored hashed, rotated on every use; reusing a revoked token revokes all of the user's tokens).
 - Roles: **Admin** (users, series, everything), **Accountant** (create/issue/void documents, catalog),
   **Viewer** (read-only). Policy-based authorization on controllers.
 - Seeded demo users for each role (credentials in README).
@@ -215,7 +215,7 @@ its number in the UI*.
 ### Phase 6 — Dashboard
 - Query services (read side, projections only): revenue by month (last 12 months, net of credit
   notes), top 5 customers, outstanding amounts (issued, unpaid) with ageing buckets.
-- Angular dashboard page: KPI cards + charts.
+- Angular dashboard page: KPI cards + simple SVG bar chart (no chart library).
 - Integration tests on aggregated figures with a known dataset.
 
 ### Phase 7 — Polish & presentation
@@ -236,7 +236,6 @@ All host ports are in **5100–5199**:
 | Web (nginx serving Angular, proxies `/api` → API) | **5100** | 80 |
 | API (direct access, Scalar at `/scalar`) | **5101** | 8080 |
 | SQL Server | **5102** | 1433 |
-| Seq (optional log UI, compose profile `observability`) | **5103** | 80 |
 
 `docker compose up` builds and starts web, API and database; the API waits for the DB health check,
 applies migrations and seeds demo data.
@@ -247,10 +246,10 @@ applies migrations and seeds demo data.
 
 - **Domain unit tests** (fast, no mocks needed): totals & VAT rounding, exemption rules, state
   transitions (valid and invalid), numbering, hash chain, ATCUD, NIF validation.
-- **Application unit tests**: handler orchestration with NSubstitute fakes, validators.
+- **Application unit tests**: use-case orchestration with NSubstitute fakes, validators.
 - **Architecture tests**: dependency rule, no EF Core in Application/Domain, naming conventions.
-- **API integration tests**: one SQL Server container per test run (Testcontainers), database reset
-  between tests (Respawn, Apache-2.0), real HTTP through `WebApplicationFactory`, real JWTs.
+- **API integration tests**: one SQL Server container per test run (Testcontainers), a fresh database
+  per test class, real HTTP through `WebApplicationFactory`, real JWTs.
 - **Frontend**: unit tests for services/critical components (Angular's default runner).
 
 ---
@@ -271,8 +270,16 @@ applies migrations and seeds demo data.
 
 Defaults below are what I'll use unless you say otherwise:
 
-- **UI kit:** Angular Material (vs. Tailwind/PrimeNG).
-- **Phase 1 without auth**, auth added in Phase 2 (keeps the first slice small; endpoints get
-  `[Authorize]` retroactively with tests).
-- **Signing:** RSA-SHA1 to mirror the AT format (vs. a simpler HMAC-SHA256, which would diverge from AT).
-- **Port mapping** as in section 6.
+Confirmed: Phase 1 without auth; RSA-SHA1 signing to mirror AT; ports as in section 6.
+UI kit: **none** — plain CSS keeps the frontend lean (see section 10).
+
+## 10. Simplifications after review
+
+| Cut | Replaced by |
+|---|---|
+| Handler interfaces + Scrutor decorators | Plain use-case classes registered explicitly; a single MVC action filter runs FluentValidation |
+| NetArchTest | ~30 lines of reflection over assembly references |
+| Respawn | A fresh database per test class in the same container |
+| Angular Material, chart library | Plain CSS and a tiny SVG bar chart component |
+| Seq | Serilog console output (structured, readable with `docker compose logs`) |
+| Refresh-token "families" | Rotation + revoke all of the user's refresh tokens on reuse |
