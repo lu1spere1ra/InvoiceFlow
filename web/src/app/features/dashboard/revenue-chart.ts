@@ -190,14 +190,19 @@ export class RevenueChart {
   protected readonly plotTop = 16;
   protected readonly plotBottom = 228;
 
+  /** Axis built from a round step (1, 2, 2.5 or 5 × 10ⁿ) so every tick label is a round number. */
   private readonly scale = computed(() => {
     const values = this.data().map((d) => d.netRevenue);
-    const max = niceCeil(Math.max(0, ...values));
-    const min = Math.min(0, ...values) < 0 ? -niceCeil(-Math.min(...values)) : 0;
-    const span = max - min || 1;
+    const dataMax = Math.max(0, ...values);
+    const dataMin = Math.min(0, ...values);
+    const step = niceStep((dataMax - dataMin) / 4 || 1);
+    const max = Math.ceil(dataMax / step) * step || step;
+    const min = Math.floor(dataMin / step) * step;
+    const span = max - min;
     return {
       max,
       min,
+      step,
       y: (v: number) => this.plotTop + ((max - v) / span) * (this.plotBottom - this.plotTop),
     };
   });
@@ -208,15 +213,13 @@ export class RevenueChart {
   );
 
   protected readonly ticks = computed(() => {
-    const { max, min, y } = this.scale();
-    const steps = 4;
-    return Array.from({ length: steps + 1 }, (_, i) => min + ((max - min) * i) / steps).map(
-      (value) => ({
-        value,
-        y: y(value),
-        label: compactEuro(value),
-      }),
-    );
+    const { max, min, step, y } = this.scale();
+    const count = Math.round((max - min) / step);
+    return Array.from({ length: count + 1 }, (_, i) => min + step * i).map((value) => ({
+      value,
+      y: y(value),
+      label: compactEuro(value),
+    }));
   });
 
   protected readonly bars = computed(() => {
@@ -255,13 +258,9 @@ function columnPath(x: number, w: number, zeroY: number, valueY: number): string
   return `M${x},${zeroY} V${valueY - r} Q${x},${valueY} ${x + r},${valueY} H${x + w - r} Q${x + w},${valueY} ${x + w},${valueY - r} V${zeroY} Z`;
 }
 
-function niceCeil(value: number): number {
-  if (value <= 0) {
-    return 0;
-  }
-  const magnitude = 10 ** Math.floor(Math.log10(value));
-  const step = [1, 2, 2.5, 5, 10].find((s) => s * magnitude >= value)!;
-  return step * magnitude;
+function niceStep(rough: number): number {
+  const magnitude = 10 ** Math.floor(Math.log10(rough));
+  return [1, 2, 2.5, 5, 10].find((s) => s * magnitude >= rough)! * magnitude;
 }
 
 function compactEuro(value: number): string {
