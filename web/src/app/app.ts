@@ -21,6 +21,9 @@ import { Auth } from './core/auth';
           <a routerLink="/documents" routerLinkActive="active">Documents</a>
           <a routerLink="/customers" routerLinkActive="active">Customers</a>
           <a routerLink="/products" routerLinkActive="active">Products</a>
+          @if (auth.canWrite()) {
+            <a routerLink="/saft" routerLinkActive="active">SAF-T export</a>
+          }
           @if (auth.hasAnyRole('Admin')) {
             <a routerLink="/series" routerLinkActive="active">Series</a>
           }

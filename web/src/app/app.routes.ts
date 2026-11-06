@@ -56,6 +56,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/products/product-list').then((m) => m.ProductList),
       },
       {
+        path: 'saft',
+        canActivate: [writerGuard],
+        title: 'SAF-T export · InvoiceFlow',
+        loadComponent: () => import('./features/saft/saft-export').then((m) => m.SaftExport),
+      },
+      {
         path: 'series',
         canActivate: [adminGuard],
         title: 'Series · InvoiceFlow',
