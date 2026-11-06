@@ -8,5 +8,7 @@ public static class ProductErrors
     public static readonly Error DescriptionRequired = new("Product.DescriptionRequired", "The product description is required.");
     public static readonly Error NegativePrice = new("Product.NegativePrice", "The unit price cannot be negative.");
 
+    public static readonly Error DuplicateCode = Error.Conflict("Product.DuplicateCode", "Another product already uses this code.");
+
     public static Error NotFound(Guid id) => Error.NotFound("Product.NotFound", $"Product '{id}' was not found.");
 }

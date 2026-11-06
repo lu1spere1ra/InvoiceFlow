@@ -3,7 +3,7 @@ using InvoiceFlow.Domain.Common;
 namespace InvoiceFlow.Domain.Products;
 
 /// <summary>An article or service that can be invoiced.</summary>
-public sealed class Product : Entity
+public sealed class Product : Entity, ISoftDeletable
 {
     private Product(string code, string description, ProductType type, string unit, decimal unitPrice, Guid taxRateId)
     {

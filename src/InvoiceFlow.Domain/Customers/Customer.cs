@@ -2,7 +2,7 @@ using InvoiceFlow.Domain.Common;
 
 namespace InvoiceFlow.Domain.Customers;
 
-public sealed class Customer : Entity
+public sealed class Customer : Entity, ISoftDeletable
 {
     private Customer(string name, Nif nif, Address address, string? email)
     {
