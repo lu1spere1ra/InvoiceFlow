@@ -4,6 +4,10 @@ using System.Text.Json.Serialization;
 using InvoiceFlow.Application.Catalog;
 using InvoiceFlow.Application.Common;
 using InvoiceFlow.Application.Customers;
+using InvoiceFlow.Application.Invoices;
+using InvoiceFlow.Domain.Invoices;
+using InvoiceFlow.Infrastructure.Persistence;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace InvoiceFlow.Api.IntegrationTests.Infrastructure;
 
@@ -26,6 +30,13 @@ public abstract class IntegrationTest : IClassFixture<ApiFactoryFixture>
     /// <summary>Signed in as the demo admin.</summary>
     protected HttpClient Client { get; }
 
+    /// <summary>Direct database access for assertions on things the API does not expose (audit columns).</summary>
+    protected async Task<T> WithDbAsync<T>(Func<AppDbContext, Task<T>> action)
+    {
+        await using var scope = _fixture.Factory.Services.CreateAsyncScope();
+        return await action(scope.ServiceProvider.GetRequiredService<AppDbContext>());
+    }
+
     protected HttpClient AnonymousClient() => _fixture.Factory.CreateClient();
 
     protected Task<HttpClient> ClientForAsync(string email, string password) => _fixture.SignedInClientAsync(email, password);
@@ -40,6 +51,21 @@ public abstract class IntegrationTest : IClassFixture<ApiFactoryFixture>
 
     protected async Task<ProductDto> AnyProductAsync(string code = "CONS-H") =>
         (await GetAsync<List<ProductDto>>("/api/products")).Single(p => p.Code == code);
+
+    protected async Task<InvoiceDto> IssuedAsync(
+        DocumentType type = DocumentType.Invoice, string productCode = "CONS-H", decimal quantity = 1)
+    {
+        var customer = await SeededCustomerAsync();
+        var product = await AnyProductAsync(productCode);
+        var draft = await ReadAsync<InvoiceDto>(await Client.PostAsJsonAsync(
+            "/api/invoices",
+            new CreateInvoiceDraftInput(type, customer.Id, 30, [new InvoiceLineInput(product.Id, quantity)]),
+            Json,
+            Ct));
+        var issued = await Client.PostAsync($"/api/invoices/{draft.Id}/issue", null, Ct);
+        issued.EnsureSuccessStatusCode();
+        return await ReadAsync<InvoiceDto>(issued);
+    }
 
     protected async Task<CustomerDto> SeededCustomerAsync(string nif = "509123457") =>
         (await GetAsync<PagedResult<CustomerDto>>($"/api/customers?search={nif}")).Items.Single();
