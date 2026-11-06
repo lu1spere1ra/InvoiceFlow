@@ -7,5 +7,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/InvoiceFlow.Architecture.Tests/InvoiceFlow.Architecture.Tests.csproj" />
+    <Project Path="tests/InvoiceFlow.Domain.UnitTests/InvoiceFlow.Domain.UnitTests.csproj" />
   </Folder>
 </Solution>
