@@ -6,6 +6,7 @@
     <Project Path="src/InvoiceFlow.Infrastructure/InvoiceFlow.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/InvoiceFlow.Api.IntegrationTests/InvoiceFlow.Api.IntegrationTests.csproj" />
     <Project Path="tests/InvoiceFlow.Application.UnitTests/InvoiceFlow.Application.UnitTests.csproj" />
     <Project Path="tests/InvoiceFlow.Architecture.Tests/InvoiceFlow.Architecture.Tests.csproj" />
     <Project Path="tests/InvoiceFlow.Domain.UnitTests/InvoiceFlow.Domain.UnitTests.csproj" />
