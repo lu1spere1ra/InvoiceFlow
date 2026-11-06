@@ -1,6 +1,8 @@
 using InvoiceFlow.Api.Infrastructure;
+using InvoiceFlow.Application.Auth;
 using InvoiceFlow.Application.Common;
 using InvoiceFlow.Application.Customers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InvoiceFlow.Api.Controllers;
@@ -19,6 +21,7 @@ public sealed class CustomersController : ApiControllerBase
     public async Task<ActionResult<CustomerDto>> Get(Guid id, [FromServices] ICustomerQueries queries, CancellationToken cancellationToken) =>
         await queries.GetByIdAsync(id, cancellationToken) is { } customer ? customer : NotFound();
 
+    [Authorize(Roles = Roles.Writers)]
     [HttpPost]
     [ProducesResponseType<CustomerDto>(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]

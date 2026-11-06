@@ -1,6 +1,8 @@
 using InvoiceFlow.Api.Infrastructure;
+using InvoiceFlow.Application.Auth;
 using InvoiceFlow.Application.Common;
 using InvoiceFlow.Application.Invoices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InvoiceFlow.Api.Controllers;
@@ -20,6 +22,7 @@ public sealed class InvoicesController : ApiControllerBase
         await queries.GetByIdAsync(id, cancellationToken) is { } invoice ? invoice : NotFound();
 
     /// <summary>Creates a draft. Drafts have no number and can be edited or deleted.</summary>
+    [Authorize(Roles = Roles.Writers)]
     [HttpPost]
     [ProducesResponseType<InvoiceDto>(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -35,6 +38,7 @@ public sealed class InvoicesController : ApiControllerBase
     }
 
     /// <summary>Replaces customer, payment terms and lines of a draft.</summary>
+    [Authorize(Roles = Roles.Writers)]
     [HttpPut("{id:guid}")]
     [ProducesResponseType<InvoiceDto>(StatusCodes.Status200OK)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -48,6 +52,7 @@ public sealed class InvoicesController : ApiControllerBase
         return result.IsSuccess ? result.Value : Problem(result.Error);
     }
 
+    [Authorize(Roles = Roles.Writers)]
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
@@ -59,6 +64,7 @@ public sealed class InvoicesController : ApiControllerBase
     }
 
     /// <summary>Issues a draft: assigns the next number of the active series and makes it immutable.</summary>
+    [Authorize(Roles = Roles.Writers)]
     [HttpPost("{id:guid}/issue")]
     [ProducesResponseType<InvoiceDto>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]

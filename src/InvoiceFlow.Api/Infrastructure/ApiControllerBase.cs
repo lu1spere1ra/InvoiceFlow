@@ -5,6 +5,7 @@ namespace InvoiceFlow.Api.Infrastructure;
 
 [ApiController]
 [Produces("application/json")]
+[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 public abstract class ApiControllerBase : ControllerBase
 {
     /// <summary>Maps an expected business failure to an RFC 9457 ProblemDetails response (ADR 0005).</summary>

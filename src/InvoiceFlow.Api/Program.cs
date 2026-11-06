@@ -2,8 +2,10 @@ using System.Globalization;
 using System.Text.Json.Serialization;
 using InvoiceFlow.Api.Infrastructure;
 using InvoiceFlow.Application;
+using InvoiceFlow.Application.Auth;
 using InvoiceFlow.Infrastructure;
 using InvoiceFlow.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authorization;
 using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Formatting.Compact;
@@ -33,8 +35,14 @@ builder.Services
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ConcurrencyConflictExceptionHandler>();
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options => options.AddDocumentTransformer<BearerSecurityTransformer>());
 builder.Services.AddHealthChecks();
+
+// Secure by default: every endpoint requires a signed-in user unless it opts out with [AllowAnonymous].
+builder.Services.AddAuthorizationBuilder()
+    .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -44,13 +52,15 @@ var app = builder.Build();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 app.UseSerilogRequestLogging();
+app.UseAuthentication();
+app.UseAuthorization();
 
 // API docs are always on: this is a demo application. A real deployment would gate them by environment.
-app.MapOpenApi();
-app.MapScalarApiReference(options => options.WithTitle("InvoiceFlow API"));
+app.MapOpenApi().AllowAnonymous();
+app.MapScalarApiReference(options => options.WithTitle("InvoiceFlow API")).AllowAnonymous();
 
 app.MapControllers();
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/health").AllowAnonymous();
 
 if (app.Configuration.GetValue<bool>("Database:InitializeOnStartup"))
 {
