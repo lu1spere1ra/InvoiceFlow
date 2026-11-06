@@ -31,9 +31,10 @@ internal sealed class DemoDocumentSeeder(AppDbContext db, IAtSeriesRegistry regi
         {
             // Business grows a little over the year.
             var documents = 4 + _random.Next(3) + ((month.Month - start.Month + 12) % 12 / 3);
+            // The current month only has the days up to today.
+            var lastDay = month.Year == today.Year && month.Month == today.Month ? today.Day : DateTime.DaysInMonth(month.Year, month.Month);
             var days = Enumerable.Range(0, documents)
-                .Select(_ => month.AddDays(_random.Next(DateTime.DaysInMonth(month.Year, month.Month))))
-                .Where(day => day <= today)
+                .Select(_ => month.AddDays(_random.Next(lastDay)))
                 .Order()
                 .ToList();
 
